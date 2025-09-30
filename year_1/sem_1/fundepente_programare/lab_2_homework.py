@@ -18,10 +18,17 @@ def isPrime(num: int):
 
 def prim_special(n: int):
     i = n
+
+    # optimizare pentru a ignora numerele pare
+    # (mai putin 2, singurul numar prim par)
+    if i==2: return 2
+    if i%2==0:
+        i-=1
+
     while i > 1:
         if isPrime(i):
             return i
-        i -= 1
+        i -= 2
 
     # daca nu exista
     print("Nu Exista")
