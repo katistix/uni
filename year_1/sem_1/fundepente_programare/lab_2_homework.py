@@ -3,8 +3,6 @@
 # de numar, tipariti un mesaj
 
 def isPrime(num: int):
-    prime = True
-
     if num < 2: 
         return False
 
@@ -12,11 +10,10 @@ def isPrime(num: int):
     d = 2
     while d*d <= num:
         if (num % d == 0):
-            prime = False
-            break
+            return False
         d += 1
 
-    return prime
+    return True
 
 
 def prim_special(n: int):
