@@ -1,0 +1,6 @@
+# Ignore all PDFs
+*.pdf
+
+# Allow the exported folder (including nested)
+!/exported/
+!/exported/**/*.pdf
