@@ -28,7 +28,7 @@ def prim_special(n: int):
 
     # daca nu exista
     print("Nu Exista")
-    return None  # dacă nu există
+    return None
 
 
 # Teste:
