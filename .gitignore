@@ -1,6 +1,10 @@
-# Ignore all PDFs
-*.pdf
+# # Ignore all PDFs
+# *.pdf
 
-# Allow the exported folder (including nested)
-!/exported/
-!/exported/**/*.pdf
+# # Allow the exported folder (including nested)
+# !/exported/
+# !/exported/**/*.pdf
+
+
+# Ignore temp files used for notes
+misc/notepad.md
