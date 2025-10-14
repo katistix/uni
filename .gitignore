@@ -9,6 +9,10 @@
 # Ignore temp files used for notes
 misc/notepad.md
 
+# ASC (Architecture of Computer Systems) compiled files
+sem01_arhitectura_sistemelor_calcul/*.lst
+sem01_arhitectura_sistemelor_calcul/*.exe
+
 .DS_Store
 .spice-clipboard
 System\ Volume\ Information
