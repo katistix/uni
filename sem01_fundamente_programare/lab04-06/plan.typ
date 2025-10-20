@@ -57,11 +57,10 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   table.header[*Iterația*][*Funcționalități planificate*],
   [*I1*], [
     • F1. Adaugă număr complex la sfârșitul listei \ 
-    • F2. Afișare listă curentă (organizată și clară) \
     • F6. Tipărește partea imaginară pentru numere din interval \ 
     • F7. Tipărește numerele cu modulul mai mic decât 10 \
     • F8. Tipărește numerele cu modulul egal cu 10 \
-    • Ghid de utilizare integrat și validare îmbunătățită
+    • Afișare listă curentă
   ],
   [*I2*], [
     • F2. Inserare număr complex pe poziție \ 
@@ -87,12 +86,12 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   stroke: 0.5pt,
   fill: (rgb("f8f8f8"), none, none) * 3,
   table.header[*Utilizator*][*Program*][*Descriere*],
-  [1], [Meniu cu categorii organizate afișat], [Alege "1. Adaugă număr complex"],
-  [3+4i], [Interfață dedicată pentru introducerea numerelor], [Introduce numărul cu validare îmbunătățită],
-  [], [Confirmare cu modul calculat și listă actualizată], [Afișează succesul operației și ultimele elemente],
-  [1], [Revenire la meniu principal], [Alege din nou adăugarea],
-  [6+8i], [Același workflow îmbunătățit], [Introduce număr cu modul = 10],
-  [], [Lista: \[(3, 4), (6, 8)\] cu module afișate], [Confirmă cu indicarea modulului special]
+  [1], [Meniu afișat], [Alege "1. Adaugă număr complex"],
+  [3+4i], [Interfață pentru introducerea numerelor], [Introduce numărul cu validare],
+  [], [Confirmare cu modul calculat și listă actualizată], [Afișează succesul operației],
+  [1], [Revenire la meniu principal], [Alege din nou adăugarea], 
+  [6+8i], [Același workflow], [Introduce număr cu modul = 10],
+  [], [Lista: \[(3, 4), (6, 8)\] cu module afișate], [Confirmă cu indicarea modulului]
 )
 
 === F2. Afișare listă curenta
@@ -106,13 +105,13 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   fill: (rgb("f8f8f8"), none, none) * 3,
   table.header[*Utilizator*][*Program*][*Descriere*],
   [2], [Meniu principal], [Alege "2. Afișează lista curentă"],
-  [], [Lista formatată cu emoji și module], [Afișează toate numerele cu calculul modulului],
-  [], [Format: "0. 3+4i → |z| = 5.000"], [Informații clare despre fiecare element]
+  [], [Lista formatată cu module], [Afișează toate numerele cu calculul modulului],
+  [], [Format: "0. 3+4i modul = 5.000"], [Informații despre fiecare element]
 )
 
 === F6. Tipărește partea imaginară pentru numere din interval
 
-*Interfață îmbunătățită pentru gestionarea intervalelor:*
+*Interfață pentru gestionarea intervalelor:*
 
 #table(
   columns: (1fr, 2fr, 2fr),
@@ -120,16 +119,16 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   stroke: 0.5pt,
   fill: (rgb("f8f8f8"), none, none) * 3,
   table.header[*Utilizator*][*Program*][*Descriere*],
-  [3], [Meniu organizat pe categorii], [Alege "3. Afișează părți imaginare"],
-  [], [Lista completă cu indexuri vizibili], [Afișează toate elementele cu pozițiile],
-  [0 1], [Validare îmbunătățită a intervalului], [Introduce interval cu verificări],
-  [], [Părți imaginare: 4, -5 + detalii], [Afișează rezultatul și elementele originale],
-  [], [Mapare clară: "0. 3+4i → partea imag: 4"], [Corelația dintre pozițiile și rezultate]
+  [3], [Meniu], [Alege "3. Afișează părți imaginare"],
+  [], [Lista cu indexuri], [Afișează toate elementele cu pozițiile],
+  [0 1], [Validare interval], [Introduce interval cu verificări],
+  [], [Părți imaginare: 4, -5], [Afișează rezultatul și elementele originale],
+  [], [Mapare: "0. 3+4i partea imag: 4"], [Corelația dintre pozițiile și rezultate]
 )
 
 === F7. Tipărește numerele cu modulul mai mic decât 10
 
-*Interfață specializată pentru filtrarea după modul:*
+*Interfață pentru filtrarea după modul:*
 
 #table(
   columns: (1fr, 2fr, 2fr),
@@ -137,15 +136,15 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   stroke: 0.5pt,
   fill: (rgb("f8f8f8"), none, none) * 3,
   table.header[*Utilizator*][*Program*][*Descriere*],
-  [4], [Meniu cu categorii clare], [Alege "4. Numere cu modul < 10"],
-  [], [Analiză automată și categorisare], [Filtrează și grupează rezultatele],
-  [], [Numere incluse: 3+4i (|z|=5)], [Afișează numerele care îndeplinesc condiția],
-  [], [Numere excluse: 6+8i (|z|=10)], [Arată și numerele care nu îndeplinesc condiția]
+  [4], [Meniu], [Alege "4. Numere cu modul < 10"],
+  [], [Analiză și categorisare], [Filtrează și grupează rezultatele],
+  [], [Numere incluse: 3+4i (modul=5)], [Afișează numerele care îndeplinesc condiția],
+  [], [Numere excluse: 6+8i (modul=10)], [Arată și numerele care nu îndeplinesc condiția]
 )
 
 === F8. Tipărește numerele cu modulul egal cu 10
 
-*Nou adăugată în Iterația 1:*
+*Funcționalitate pentru modulul egal cu 10:*
 
 #table(
   columns: (1fr, 2fr, 2fr),
@@ -153,15 +152,15 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   stroke: 0.5pt,
   fill: (rgb("f8f8f8"), none, none) * 3,
   table.header[*Utilizator*][*Program*][*Descriere*],
-  [5], [Meniu extins cu noua funcționalitate], [Alege "5. Numere cu modul = 10"],
-  [], [Căutare cu toleranță pentru numere reale], [Găsește numerele cu modul exact 10],
-  [], [Rezultat: 6+8i → |z| = 10.000 = 10 ✓], [Afișează cu confirmarea egalității],
-  [], [Sugestii utile dacă nu găsește rezultate], [Oferă exemple pentru modul = 10]
+  [5], [Meniu cu funcționalitatea], [Alege "5. Numere cu modul = 10"],
+  [], [Căutare pentru numere reale], [Găsește numerele cu modul exact 10],
+  [], [Rezultat: 6+8i modul = 10.000 = 10], [Afișează cu confirmarea egalității],
+  [], [Sugestii dacă nu găsește rezultate], [Oferă exemple pentru modul = 10]
 )
 
 === Ghid de utilizare integrat
 
-*Funcționalitate nouă pentru ușurința utilizării:*
+*Funcționalitate pentru ajutor:*
 
 #table(
   columns: (1fr, 2fr, 2fr),
@@ -170,48 +169,48 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   fill: (rgb("f8f8f8"), none, none) * 3,
   table.header[*Utilizator*][*Program*][*Descriere*],
   [h], [Meniu cu opțiune de ajutor], [Alege "h. Afișează explicații"],
-  [], [Ghid complet cu formate acceptate], [Arată exemple practice și reguli],
-  [], [Exemple de module: 3+4i → |z| = 5], [Explică calculul modulului cu exemple concrete],
-  [], [Reguli importante și formatare], [Instrucțiuni clare pentru introducerea datelor]
+  [], [Ghid cu formate acceptate], [Arată exemple și reguli],
+  [], [Exemple de module: 3+4i modul = 5], [Explică calculul modulului cu exemple],
+  [], [Reguli și formatare], [Instrucțiuni pentru introducerea datelor]
 )
 
 == Lista de activități (Tasks) pentru Iterația 1
 
-+ Creează structura de date pentru reprezentarea numerelor complexe ✅
-+ Implementează funcția de adăugare număr complex în listă ✅
-+ Implementează funcția de calculare a modulului unui număr complex ✅
-+ Implementează funcția de tipărire părți imaginare din interval ✅
-+ Implementează funcția de filtrare numere cu modul < 10 ✅
-+ *NOU:* Implementează funcția de filtrare numere cu modul = 10 ✅
-+ *NOU:* Redesign complet al meniului cu categorii logice ✅
-+ *NOU:* Interfețe specializate pentru fiecare funcționalitate ✅
-+ *NOU:* Sistem de ajutor integrat cu ghid de utilizare ✅
-+ *NOU:* Validare îmbunătățită și mesaje de eroare intuitive ✅
-+ *NOU:* Afișare îmbunătățită cu emoji și formatare clară ✅
-+ Implementează funcții de test pentru toate funcționalitățile ✅
-+ Integrarea tuturor componentelor în aplicația principală ✅
++ Creează structura de date pentru reprezentarea numerelor complexe
++ Implementează funcția de adăugare număr complex în listă
++ Implementează funcția de calculare a modulului unui număr complex
++ Implementează funcția de tipărire părți imaginare din interval
++ Implementează funcția de filtrare numere cu modul < 10
++ Implementează funcția de filtrare numere cu modul = 10
++ Implementează meniul principal cu opțiuni
++ Implementează interfețe pentru fiecare funcționalitate
++ Implementează sistem de ajutor cu ghid de utilizare
++ Implementează validare și mesaje de eroare
++ Implementează afișare cu formatare
++ Implementează funcții de test pentru toate funcționalitățile
++ Integrarea tuturor componentelor în aplicația principală
 
-== Îmbunătățiri UI pentru Iterația 1
+== Aspecte tehnice pentru Iterația 1
 
-=== Design nou al meniului
+=== Design meniu
 
-- *Organizare pe categorii*: Gestiune listă, Căutare & Afișare, Ajutor
-- *Numerotare logică*: 1-5 pentru funcționalități principale, h pentru ajutor, 0 pentru ieșire  
-- *Interfață grafică*: Utilizare caractere Unicode pentru borduri elegante
-- *Emoji pentru claritate*: Icoane intuitive pentru fiecare categorie
+- Organizare pe categorii: Gestiune listă, Căutare și Afișare, Ajutor
+- Numerotare: 1-5 pentru funcționalități principale, h pentru ajutor, 0 pentru ieșire  
+- Interfață: Utilizare caractere pentru borduri
+- Claritate: Opțiuni pentru fiecare categorie
 
-=== Funcționalități noi
+=== Funcționalități implementate
 
-- *F8. Numere cu modul = 10*: Completează cerințele din problemă
-- *Ghid de utilizare integrat*: Explicații detaliate și exemple practice
-- *Validare îmbunătățită*: Mesaje de eroare clare cu sugestii de rezolvare
+- F8. Numere cu modul = 10: Completează cerințele din problemă
+- Ghid de utilizare: Explicații și exemple practice
+- Validare: Mesaje de eroare cu sugestii de rezolvare
 
 === Experiența utilizatorului
 
-- *Feedback vizual*: Confirmări cu emoji, indicatori de stare
-- *Informații contextuale*: Module calculate și afișate pentru fiecare număr
-- *Navigare intuitivă*: Instrucțiuni clare la fiecare pas
-- *Recuperare din erori*: Mesaje constructive cu exemple concrete
+- Feedback vizual: Confirmări și indicatori de stare
+- Informații contextuale: Module calculate și afișate pentru fiecare număr
+- Navigare: Instrucțiuni la fiecare pas
+- Recuperare din erori: Mesaje cu exemple
 
 == Cazuri de testare pentru Iterația 1
 
@@ -223,11 +222,11 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   stroke: 0.5pt,
   fill: (rgb("f0f8ff"), none) * 2,
   table.header[*Input*][*Output așteptat*],
-  [3+4i], [✅ Confirmare cu modul = 5.000, listă actualizată],
-  [6+8i], [✅ Confirmare cu modul = 10.000, listă cu 2 elemente],
-  [0+0i], [✅ Confirmare cu modul = 0.000, listă cu 3 elemente],
-  [i], [✅ Confirmare cu modul = 1.000 (0+1i)],
-  [Format invalid], [❌ Mesaj de eroare cu exemple]
+  [3+4i], [Confirmare cu modul = 5.000, listă actualizată],
+  [6+8i], [Confirmare cu modul = 10.000, listă cu 2 elemente],
+  [0+0i], [Confirmare cu modul = 0.000, listă cu 3 elemente],
+  [i], [Confirmare cu modul = 1.000 (0+1i)],
+  [Format invalid], [Mesaj de eroare cu exemple]
 )
 
 === Părți imaginare din interval
@@ -241,7 +240,7 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   [0, 1], [4, -5 + mapare clară cu elementele originale],
   [1, 2], [-5, 0 + verificare corectitudine],
   [0, 2], [4, -5, 0 + afișare completă],
-  [Interval invalid], [❌ Mesaj de eroare cu limitele corecte]
+  [Interval invalid], [Mesaj de eroare cu limitele corecte]
 )
 
 === Filtrare după modul
@@ -252,8 +251,8 @@ Creați un program care lucrează cu numere complexe (a + bi). Programul gestion
   stroke: 0.5pt,
   fill: (rgb("f0f8ff"), none) * 2,
   table.header[*Operație*][*Rezultat așteptat*],
-  [Modul < 10 pentru \[(3,4), (6,8), (9,12)\]], [✅ (3,4) inclus + (6,8), (9,12) excluse],
-  [Modul = 10 pentru \[(3,4), (6,8), (0,10)\]], [✅ (6,8), (0,10) găsite cu confirmarea egalității],
-  [Listă goală], [❌ Mesaj clar că lista este goală],
-  [Fără rezultate modul = 10], [💡 Sugestii: 6+8i, 10+0i, 0+10i]
+  [Modul < 10 pentru \[(3,4), (6,8), (9,12)\]], [(3,4) inclus + (6,8), (9,12) excluse],
+  [Modul = 10 pentru \[(3,4), (6,8), (0,10)\]], [(6,8), (0,10) găsite cu confirmarea egalității],
+  [Listă goală], [Mesaj că lista este goală],
+  [Fără rezultate modul = 10], [Sugestii: 6+8i, 10+0i, 0+10i]
 )
