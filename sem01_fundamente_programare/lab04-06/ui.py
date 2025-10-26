@@ -14,6 +14,9 @@ def show_menu():
 3. Afiseaza parti imaginare din interval
 4. Afiseaza numere cu modulul mai mic decat 10
 5. Afiseaza numere cu modulul egal cu 10
+6. Insereaza numar complex la pozitie data
+7. Sterge numar de la pozitie data
+8. Suma numerelor dintr-o subsecventa
 h. Ajutor
 0. Iesire
 
@@ -134,3 +137,23 @@ Operatii disponibile:
 4. Filtreaza numerele cu modulul mai mic decat 10
 5. Filtreaza numerele cu modulul exact egal cu 10
 """)
+
+def get_position_input(max_index, operation_name):
+    while True:
+        try:
+            position = int(input(f"Introduceti pozitia pentru {operation_name} (0-{max_index}): "))
+            
+            if position < 0 or position > max_index:
+                print(f"Pozitie invalida. Trebuie sa fie intre 0 si {max_index}")
+                continue
+            
+            return position
+        except ValueError:
+            print("Va rog introduceti un numar intreg valid")
+
+def show_sum_result(numbers, result_sum, start, end):
+    print(f"\nSuma numerelor din intervalul [{start}, {end}]:")
+    print("Numere incluse:")
+    for i in range(start, end + 1):
+        print(f"  {i}. {numbers[i].get_string()}")
+    print(f"Suma: {result_sum.get_string()} (modul = {result_sum.get_module():.3f})")

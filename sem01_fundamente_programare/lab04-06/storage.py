@@ -42,6 +42,33 @@ class Storage:
                 numbers.append(number)
         
         return numbers
+    
+    def insert_number_at_position(self, position: int, new_number: numar_complex.ComplexNumber):
+        if position < 0 or position > len(self.numbers):
+            raise ValueError(f"Position {position} is out of bounds. Valid range: 0-{len(self.numbers)}")
+        
+        self.numbers.insert(position, new_number)
+        return self.numbers
+    
+    def delete_number_at_position(self, position: int):
+        if position < 0 or position >= len(self.numbers):
+            raise ValueError(f"Position {position} is out of bounds. Valid range: 0-{len(self.numbers)-1}")
+        
+        deleted_number = self.numbers.pop(position)
+        return deleted_number
+    
+    def sum_numbers_interval(self, start: int, end: int):
+        if start < 0 or end >= len(self.numbers) or start > end:
+            raise ValueError(f"Invalid interval [{start}, {end}]. Valid range: 0-{len(self.numbers)-1}")
+        
+        if len(self.numbers) == 0:
+            return numar_complex.ComplexNumber(0, 0)
+        
+        result = numar_complex.ComplexNumber(0, 0)
+        for i in range(start, end + 1):
+            result = result.add(self.numbers[i])
+        
+        return result
 
 
 
@@ -73,3 +100,26 @@ def test_module():
 
     equal_numbers = storage.get_numbers_module_equal(10.0)
     assert(len(equal_numbers) == 1)  # 6+8i
+
+    # Test insert at position
+    n4 = numar_complex.ComplexNumber(2, 3)
+    storage.insert_number_at_position(1, n4)  # Insert at position 1
+    assert(len(storage.numbers) == 4)
+    assert(storage.numbers[1].get_real() == 2)
+    assert(storage.numbers[1].get_imaginary() == 3)
+
+    # Test delete at position
+    deleted = storage.delete_number_at_position(1)  # Remove the inserted number
+    assert(deleted.get_real() == 2)
+    assert(deleted.get_imaginary() == 3)
+    assert(len(storage.numbers) == 3)
+
+    # Test sum interval
+    result_sum = storage.sum_numbers_interval(0, 2)  # Sum all three numbers
+    assert(result_sum.get_real() == 10)  # 3 + 6 + 1
+    assert(result_sum.get_imaginary() == 13)  # 4 + 8 + 1
+
+    # Test partial sum
+    result_sum2 = storage.sum_numbers_interval(0, 1)  # Sum first two
+    assert(result_sum2.get_real() == 9)  # 3 + 6
+    assert(result_sum2.get_imaginary() == 12)  # 4 + 8

@@ -18,6 +18,9 @@ class ComplexNumber:
     def get_module(self):
         return (self.real**2 + self.imaginary**2)**0.5
     
+    def add(self, other):
+        return ComplexNumber(self.real + other.real, self.imaginary + other.imaginary)
+    
 
 
 def test_module():
@@ -48,3 +51,18 @@ def test_module():
 
     n_complex = ComplexNumber(0,0)
     assert(abs(n_complex.get_module() - 0.0) < 0.001)
+
+    # Addition tests
+    n1 = ComplexNumber(3, 4)
+    n2 = ComplexNumber(5, 2)
+    result = n1.add(n2)
+    assert(result.get_real() == 8)
+    assert(result.get_imaginary() == 6)
+    assert(result.get_string() == "8+6i")
+
+    n3 = ComplexNumber(-2, 3)
+    n4 = ComplexNumber(1, -5)
+    result2 = n3.add(n4)
+    assert(result2.get_real() == -1)
+    assert(result2.get_imaginary() == -2)
+    assert(result2.get_string() == "-1-2i")

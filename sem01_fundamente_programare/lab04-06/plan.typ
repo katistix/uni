@@ -65,6 +65,42 @@
   [], ["Sugestii: 6+8i, 10+0i, 0+10i (dacă goală)"]
 )
 
+== MODELAREA ITERAȚIEI 2
+
+=== F2 - Inserare la poziție
+
+#table(
+  columns: 3,
+  [*Utilizator*], [*Program*], [*Descriere*],
+  [Lista: [3+4i, 6+8i]], [Afișare listă curentă], [Context pentru inserare],
+  [Selectează "6"], [Prompt poziție], ["Introduceti pozitia pentru inserare (0-2)"],
+  [Tastează "1"], [Prompt număr], ["Introduceti numarul complex"],
+  [Tastează "2+3i"], ["Numar 2+3i inserat la pozitia 1"], [Confirmare],
+  [], [Lista: [3+4i, 2+3i, 6+8i]], [Lista actualizată]
+)
+
+=== F3 - Ștergere de la poziție
+
+#table(
+  columns: 3,
+  [*Utilizator*], [*Program*], [*Descriere*],
+  [Lista: [3+4i, 2+3i, 6+8i]], [Afișare listă curentă], [Context pentru ștergere],
+  [Selectează "7"], [Prompt poziție], ["Introduceti pozitia pentru stergere (0-2)"],
+  [Tastează "1"], ["Numar 2+3i sters de la pozitia 1"], [Confirmare],
+  [], [Lista: [3+4i, 6+8i]], [Lista actualizată]
+)
+
+=== F9 - Suma subsecvenței
+
+#table(
+  columns: 3,
+  [*Utilizator*], [*Program*], [*Descriere*],
+  [Lista: [3+4i, 6+8i, 1+1i]], [Afișare listă curentă], [Context pentru sumă],
+  [Selectează "8"], [Prompt interval], ["Introduceti indexul de start/sfarsit"],
+  [Tastează "0", "2"], [Numere: 3+4i, 6+8i, 1+1i], [Afișare numere incluse],
+  [], [Suma: 10+13i modul = 16.401], [Rezultat final]
+)
+
 == TASK-URI ITERAȚIA 1
 
 *T1.* Clasa ComplexNumber
@@ -90,6 +126,31 @@
 *T6.* Integrare și testare
 - Test runner automat
 
+== TASK-URI ITERAȚIA 2
+
+*T7.* Operații aritmetice ComplexNumber
+- Metoda add() pentru adunarea numerelor complexe
+- Teste pentru operațiile aritmetice
+
+*T8.* Operații Storage avansate
+- insert_number_at_position() cu validare bounds
+- delete_number_at_position() cu validare bounds  
+- sum_numbers_interval() pentru calculul sumei
+
+*T9.* UI pentru operații noi
+- get_position_input() cu validare
+- show_sum_result() pentru afișarea rezultatelor
+- Actualizare meniu cu opțiuni 6, 7, 8
+
+*T10.* Menu handlers pentru iterația 2
+- handle_insert_at_position()
+- handle_delete_at_position()
+- handle_sum_subsequence()
+
+*T11.* Testare completă iterația 2
+- Teste pentru toate funcționalitățile noi
+- Integrare cu test runner existent
+
 == TESTE
 
 === ComplexNumber
@@ -99,7 +160,8 @@
   [*Input*], [*Output așteptat*],
   [ComplexNumber(3, 4)], [get_string() = "3+4i"],
   [ComplexNumber(5, -3)], [get_string() = "5-3i"],
-  [ComplexNumber(3, 4)], [get_module() = 5.0]
+  [ComplexNumber(3, 4)], [get_module() = 5.0],
+  [n1.add(n2) cu n1(3,4), n2(5,2)], [ComplexNumber(8, 6)]
 )
 
 === Storage
@@ -109,7 +171,10 @@
   [*Operație*], [*Rezultat așteptat*],
   [append_number(3+4i)], [Lista: [3+4i]],
   [get_numbers_module_less_than(10)], [Returnează [3+4i, 1+1i]],
-  [get_numbers_module_equal(10)], [Returnează [6+8i]]
+  [get_numbers_module_equal(10)], [Returnează [6+8i]],
+  [insert_number_at_position(1, 2+3i)], [Lista: [..., 2+3i la poziția 1, ...]],
+  [delete_number_at_position(1)], [Returnează numărul șters],
+  [sum_numbers_interval(0, 2)], [Suma tuturor numerelor din interval]
 )
 
 === Parser Input
@@ -130,22 +195,18 @@
 main.py
 ├── test_runner.py 
 ├── app.py 
-├── ui.py 
-├── menu_handler.py 
-├── numar_complex.py 
-└── storage.py 
+├── ui.py (opțiuni 1-8, h, 0)
+├── menu_handler.py (8 handlere funcționale)
+├── numar_complex.py (ComplexNumber cu add())
+└── storage.py (Storage cu insert/delete/sum)
 ```
-
-== ITERAȚIA 2
-
-- F2: Inserare pe poziție dată
-- F3: Ștergere de pe poziție
-- F6: Afișare părți imaginare din interval
-- F9: Suma unei subsecvențe
 
 == ITERAȚIA 3
 
-- F4, F5: Operații avansate de ștergere/înlocuire
-- F10, F11: Produs, sortare
-- F12, F13: Filtrări avansate  
+- F4: Ștergere interval de poziții
+- F5: Înlocuire toate aparițiile  
+- F10: Produs numerelor dintr-o subsecvență
+- F11: Lista sortată după partea imaginară
+- F12: Filtrare partea reală primă
+- F13: Filtrare după modul
 - F14: Undo functionality

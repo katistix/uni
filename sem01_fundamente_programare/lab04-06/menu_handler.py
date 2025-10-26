@@ -74,6 +74,79 @@ def handle_exit():
     return True
 
 
+def handle_insert_at_position(data_storage):
+    """Handle inserting a complex number at a given position"""
+    print("\n=== INSERARE NUMAR LA POZITIE ===")
+    numbers = data_storage.get_numbers()
+    
+    if not numbers:
+        print("Lista este goala. Adaugati primul numar.")
+        handle_add_complex_number(data_storage)
+        return
+    
+    ui.show_numbers_with_modules(numbers)
+    try:
+        position = ui.get_position_input(len(numbers), "inserare")
+        new_number = ui.get_complex_number_input()
+        
+        data_storage.insert_number_at_position(position, new_number)
+        module = new_number.get_module()
+        print(f"Numar {new_number.get_string()} inserat la pozitia {position}")
+        print(f"Lista are acum {len(data_storage.get_numbers())} elemente")
+        
+        print("\nLista actualizata:")
+        ui.show_numbers_with_modules(data_storage.get_numbers())
+        
+    except (ValueError, Exception) as e:
+        print(f"Eroare: {e}")
+
+
+def handle_delete_at_position(data_storage):
+    """Handle deleting a complex number from a given position"""
+    print("\n=== STERGERE NUMAR DE LA POZITIE ===")
+    numbers = data_storage.get_numbers()
+    
+    if not numbers:
+        print("Lista este goala")
+        return
+    
+    ui.show_numbers_with_modules(numbers)
+    try:
+        position = ui.get_position_input(len(numbers) - 1, "stergere")
+        deleted_number = data_storage.delete_number_at_position(position)
+        
+        print(f"Numar {deleted_number.get_string()} sters de la pozitia {position}")
+        print(f"Lista are acum {len(data_storage.get_numbers())} elemente")
+        
+        if data_storage.get_numbers():
+            print("\nLista actualizata:")
+            ui.show_numbers_with_modules(data_storage.get_numbers())
+        else:
+            print("Lista este acum goala")
+            
+    except (ValueError, Exception) as e:
+        print(f"Eroare: {e}")
+
+
+def handle_sum_subsequence(data_storage):
+    """Handle calculating sum of numbers from a subsequence"""
+    print("\n=== SUMA NUMERELOR DINTR-O SUBSECVENTA ===")
+    numbers = data_storage.get_numbers()
+    
+    if not numbers:
+        print("Lista este goala")
+        return
+    
+    ui.show_numbers_with_modules(numbers)
+    try:
+        start, end = ui.get_interval_input(len(numbers) - 1)
+        result_sum = data_storage.sum_numbers_interval(start, end)
+        ui.show_sum_result(numbers, result_sum, start, end)
+        
+    except (ValueError, Exception) as e:
+        print(f"Eroare: {e}")
+
+
 # Menu option mapping
 MENU_HANDLERS = {
     '1': handle_add_complex_number,
@@ -81,6 +154,9 @@ MENU_HANDLERS = {
     '3': handle_show_imaginary_parts_interval,
     '4': handle_show_numbers_module_less_than_ten,
     '5': handle_show_numbers_module_equal_ten,
+    '6': handle_insert_at_position,
+    '7': handle_delete_at_position,
+    '8': handle_sum_subsequence,
     'h': lambda data_storage: handle_show_help(),
     '0': lambda data_storage: handle_exit()
 }
