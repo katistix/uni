@@ -17,6 +17,13 @@ def show_menu():
 6. Insereaza numar complex la pozitie data
 7. Sterge numar de la pozitie data
 8. Suma numerelor dintr-o subsecventa
+9. Sterge numere dintr-un interval de pozitii
+10. Inlocuieste toate aparitiile unui numar complex
+11. Produsul numerelor dintr-o subsecventa
+12. Afiseaza lista sortata dupa partea imaginara
+13. Filtrare numere cu partea reala prima
+14. Filtrare numere dupa modul
+15. Undo ultima operatie
 h. Ajutor
 0. Iesire
 
@@ -157,3 +164,68 @@ def show_sum_result(numbers, result_sum, start, end):
     for i in range(start, end + 1):
         print(f"  {i}. {numbers[i].get_string()}")
     print(f"Suma: {result_sum.get_string()} (modul = {result_sum.get_module():.3f})")
+
+
+def show_product_result(numbers, result_product, start, end):
+    print(f"\nProdusul numerelor din intervalul [{start}, {end}]:")
+    print("Numere incluse:")
+    for i in range(start, end + 1):
+        print(f"  {i}. {numbers[i].get_string()}")
+    print(f"Produs: {result_product.get_string()} (modul = {result_product.get_module():.3f})")
+
+
+def show_sorted_numbers(sorted_numbers, title):
+    print(f"\n{title}:")
+    if not sorted_numbers:
+        print("Lista este goala")
+        return
+    
+    for i, number in enumerate(sorted_numbers):
+        module = number.get_module()
+        print(f"{i}. {number.get_string()} modul = {module:.3f} (imaginara = {number.imaginary})")
+
+
+def get_operator_input():
+    """Get comparison operator from user"""
+    while True:
+        operator = input("Introduceti operatorul de comparatie (<, =, >): ").strip()
+        if operator in ['<', '=', '>']:
+            return operator
+        print("Operator invalid. Va rog introduceti <, = sau >")
+
+
+def get_float_input(prompt):
+    """Get float value from user with validation"""
+    while True:
+        try:
+            value = float(input(prompt))
+            return value
+        except ValueError:
+            print("Va rog introduceti un numar valid")
+
+
+def show_filter_result(operation_name, removed_count, remaining_count):
+    """Show result of a filter operation"""
+    print(f"\n{operation_name}:")
+    if removed_count > 0:
+        print(f"Eliminate {removed_count} numere")
+        print(f"Raman {remaining_count} numere in lista")
+    else:
+        print("Nu au fost eliminate numere")
+
+
+def show_replacement_result(old_number, new_number, replacement_count):
+    """Show result of replacement operation"""
+    print(f"\nInlocuire aparitii:")
+    if replacement_count > 0:
+        print(f"Inlocuite {replacement_count} aparitii ale lui {old_number.get_string()} cu {new_number.get_string()}")
+    else:
+        print(f"Nu au fost gasite aparitii ale lui {old_number.get_string()}")
+
+
+def show_undo_result(success):
+    """Show result of undo operation"""
+    if success:
+        print("\nUndo efectuat cu succes")
+    else:
+        print("\nNu exista operatii pentru undo")

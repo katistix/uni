@@ -38,6 +38,15 @@ class ComplexNumber:
     def add(self, other):
         return ComplexNumber(self.real + other.real, self.imaginary + other.imaginary)
     
+    def multiply(self, other):
+        # (a + bi) * (c + di) = (ac - bd) + (ad + bc)i
+        real_part = self.real * other.real - self.imaginary * other.imaginary
+        imaginary_part = self.real * other.imaginary + self.imaginary * other.real
+        return ComplexNumber(real_part, imaginary_part)
+    
+    def equals(self, other):
+        return self.real == other.real and self.imaginary == other.imaginary
+    
 
 
 def test_module():
@@ -83,3 +92,26 @@ def test_module():
     assert(result2.real == -1)
     assert(result2.imaginary == -2)
     assert(result2.get_string() == "-1-2i")
+
+    # Multiplication tests
+    n5 = ComplexNumber(2, 1)
+    n6 = ComplexNumber(3, 4)
+    product = n5.multiply(n6)  # (2+i)*(3+4i) = 6+8i+3i+4i² = 6+11i-4 = 2+11i
+    assert(product.real == 2)
+    assert(product.imaginary == 11)
+    assert(product.get_string() == "2+11i")
+
+    n7 = ComplexNumber(1, 2)
+    n8 = ComplexNumber(2, -1)
+    product2 = n7.multiply(n8)  # (1+2i)*(2-i) = 2-i+4i-2i² = 2+3i+2 = 4+3i
+    assert(product2.real == 4)
+    assert(product2.imaginary == 3)
+    assert(product2.get_string() == "4+3i")
+
+    # Equality tests
+    n9 = ComplexNumber(3, 4)
+    n10 = ComplexNumber(3, 4)
+    n11 = ComplexNumber(3, 5)
+    assert(n9.equals(n10) == True)
+    assert(n9.equals(n11) == False)
+    assert(n10.equals(n11) == False)
