@@ -9,7 +9,7 @@ global start
 
 
 extern exit              
-import exit msvcrt.dll    
+import exit msvcrt.dll
 
 segment data use32 class=data
     a dw 0111011101010111b
