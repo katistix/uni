@@ -1,13 +1,30 @@
 class ComplexNumber:
     def __init__(self, real: int, imaginary: int):
-        self.real = real
-        self.imaginary = imaginary
+        self._real = real
+        self._imaginary = imaginary
 
-    def get_real(self):
-        return self.real
+    @property
+    def real(self):
+        return self._real
     
-    def get_imaginary(self):
-        return self.imaginary
+    @real.setter
+    def real(self, value):
+        self._real = value
+
+    # def get_real(self):
+    #     return self.real
+
+
+    @property
+    def imaginary(self):
+        return self._imaginary
+    
+    @imaginary.setter
+    def imaginary(self, value):
+        self._imaginary = value
+    
+    # def get_imaginary(self):
+    #     return self.imaginary
     
     def get_string(self):
         if(self.imaginary<0):
@@ -26,8 +43,8 @@ class ComplexNumber:
 def test_module():
     # Getter tests
     n_complex = ComplexNumber(5,3)
-    assert(n_complex.get_real()==5)
-    assert(n_complex.get_imaginary()==3)
+    assert(n_complex.real==5)
+    assert(n_complex.imaginary==3)
     
     # Stringify tests
     n_complex = ComplexNumber(5,3)
@@ -56,13 +73,13 @@ def test_module():
     n1 = ComplexNumber(3, 4)
     n2 = ComplexNumber(5, 2)
     result = n1.add(n2)
-    assert(result.get_real() == 8)
-    assert(result.get_imaginary() == 6)
+    assert(result.real == 8)
+    assert(result.imaginary == 6)
     assert(result.get_string() == "8+6i")
 
     n3 = ComplexNumber(-2, 3)
     n4 = ComplexNumber(1, -5)
     result2 = n3.add(n4)
-    assert(result2.get_real() == -1)
-    assert(result2.get_imaginary() == -2)
+    assert(result2.real == -1)
+    assert(result2.imaginary == -2)
     assert(result2.get_string() == "-1-2i")

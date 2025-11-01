@@ -23,7 +23,7 @@ class Storage:
         
         parts = []
         for i in range(start, end + 1):
-            parts.append(self.numbers[i].get_imaginary())
+            parts.append(self.numbers[i].imaginary)
         
         return parts
     
@@ -105,21 +105,21 @@ def test_module():
     n4 = numar_complex.ComplexNumber(2, 3)
     storage.insert_number_at_position(1, n4)  # Insert at position 1
     assert(len(storage.numbers) == 4)
-    assert(storage.numbers[1].get_real() == 2)
-    assert(storage.numbers[1].get_imaginary() == 3)
+    assert(storage.numbers[1].real == 2)
+    assert(storage.numbers[1].imaginary == 3)
 
     # Test delete at position
     deleted = storage.delete_number_at_position(1)  # Remove the inserted number
-    assert(deleted.get_real() == 2)
-    assert(deleted.get_imaginary() == 3)
+    assert(deleted.real == 2)
+    assert(deleted.imaginary == 3)
     assert(len(storage.numbers) == 3)
 
     # Test sum interval
     result_sum = storage.sum_numbers_interval(0, 2)  # Sum all three numbers
-    assert(result_sum.get_real() == 10)  # 3 + 6 + 1
-    assert(result_sum.get_imaginary() == 13)  # 4 + 8 + 1
+    assert(result_sum.real == 10)  # 3 + 6 + 1
+    assert(result_sum.imaginary == 13)  # 4 + 8 + 1
 
     # Test partial sum
     result_sum2 = storage.sum_numbers_interval(0, 1)  # Sum first two
-    assert(result_sum2.get_real() == 9)  # 3 + 6
-    assert(result_sum2.get_imaginary() == 12)  # 4 + 8
+    assert(result_sum2.real == 9)  # 3 + 6
+    assert(result_sum2.imaginary == 12)  # 4 + 8
