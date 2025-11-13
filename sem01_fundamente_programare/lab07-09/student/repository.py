@@ -28,7 +28,7 @@ class StudentRepository:
                 return
         raise ValueError(f"Student with id {student_id} not found")
 
-    def list_students(self) -> list[model.Student]:
+    def get_all_students(self) -> list[model.Student]:
         """Return a copy of all students in the repository."""
         return self._student_list.copy()
 
@@ -67,3 +67,52 @@ class StudentRepository:
                 pass
         
         return results
+
+
+def test_module():
+    repo = StudentRepository([])
+    assert repo.get_all_students() == []
+    assert repo._next_id == 1
+
+    student1 = repo.add_student("John Doe", 917)
+    assert student1.get_id() == 1
+    assert student1.get_name() == "John Doe"
+    assert student1.get_group() == 917
+    assert len(repo.get_all_students()) == 1
+
+    student2 = repo.add_student("Jane Smith", 918)
+    assert student2.get_id() == 2
+    assert len(repo.get_all_students()) == 2
+
+    repo.modify_student(1, "Johnny Doe", 919)
+    modified_student = repo.get_all_students()[0]
+    assert modified_student.get_name() == "Johnny Doe"
+    assert modified_student.get_group() == 919
+
+    try:
+        repo.modify_student(999, "Test", 123)
+        assert False
+    except ValueError as e:
+        assert "not found" in str(e)
+
+    results = repo.search_students("john", "name")
+    assert len(results) == 1
+    assert results[0].get_name() == "Johnny Doe"
+
+    results = repo.search_students("1", "id")
+    assert len(results) == 1
+    assert results[0].get_id() == 1
+
+    results = repo.search_students("918", "group")
+    assert len(results) == 1
+    assert results[0].get_group() == 918
+
+    repo.remove_student(1)
+    assert len(repo.get_all_students()) == 1
+    assert repo.get_all_students()[0].get_id() == 2
+
+    try:
+        repo.remove_student(999)
+        assert False
+    except ValueError as e:
+        assert "not found" in str(e)

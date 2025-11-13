@@ -123,7 +123,7 @@ Others:
         if len(args) != 1:
             print("Usage: remove_student <student_id>")
             return
-        
+        # TODO: use studentService.remove_student instead
         try:
             student_id = int(args[0])
             self._student_repo.remove_student(student_id)
@@ -135,7 +135,10 @@ Others:
 
     def _handle_list_students(self, args):
         """Handle list_students command"""
-        students = self._student_repo.list_students()
+        # TODO: use studentService.list_students instead
+
+        
+        students = self._student_repo.get_all_students()
         
         if not students:
             print("No students found.")
