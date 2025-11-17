@@ -1,13 +1,20 @@
 import os
 import shlex
 from datetime import datetime, date
-from problem.repository import ProblemRepository
-from student.repository import StudentRepository
+from services.problem import ProblemService
+from services.student import StudentService
+from services.assignment import AssignmentService
 
 class CLI:
-    def __init__(self, problem_repo: ProblemRepository, student_repo: StudentRepository):
-        self._problem_repo = problem_repo
-        self._student_repo = student_repo
+    def __init__(self):
+        self._problem_service = ProblemService()
+        self._student_service = StudentService()
+        self._assignment_service = AssignmentService()
+        
+        # Share repositories between services for data consistency
+        self._assignment_service.set_student_repo(self._student_service._student_repo)
+        self._assignment_service.set_problem_repo(self._problem_service._problem_repo)
+        
         self.running = True
 
         self.commands = {
@@ -19,6 +26,11 @@ class CLI:
             "remove_problem": self._handle_remove_problem,
             "list_problems": self._handle_list_problems,
             "search_problem": self._handle_search_problem,
+            
+            # Assignment operations
+            "create_assignment": self._handle_create_assignment,
+            "grade_assignment": self._handle_grade_assignment,
+            "list_assignments": self._handle_list_assignments,
 
             # Helpers
             'help': self._handle_help,
@@ -86,6 +98,12 @@ Problem related operations:
   list_problems                                         - List all problems
   search_problem <lab_problem_id>                       - Search problem by ID (format: '7_1')
 
+Assignment operations:
+  create_assignment <student_id> <problem_id>           - Assign a problem to a student
+                                                        Format: problem_id as '7_1'
+  grade_assignment <assignment_id> <grade>              - Grade an assignment (0-10)
+  list_assignments                                      - List all assignments
+
 Others:
   clear                                   - Clear the screen
   help                                    - Show this message
@@ -111,7 +129,7 @@ Others:
         try:
             name = args[0]
             group = int(args[1])
-            student = self._student_repo.add_student(name, group)
+            student = self._student_service.add_student(name, group)
             print(f"Student added successfully: ID {student.id}, Name: {name}, Group: {group}")
         except ValueError as e:
             print(f"Error: {e}")
@@ -123,10 +141,10 @@ Others:
         if len(args) != 1:
             print("Usage: remove_student <student_id>")
             return
-        # TODO: use studentService.remove_student instead
+        
         try:
             student_id = int(args[0])
-            self._student_repo.remove_student(student_id)
+            self._student_service.remove_student(student_id)
             print(f"Student with ID {student_id} removed successfully")
         except ValueError as e:
             print(f"Error: {e}")
@@ -135,10 +153,7 @@ Others:
 
     def _handle_list_students(self, args):
         """Handle list_students command"""
-        # TODO: use studentService.list_students instead
-
-        
-        students = self._student_repo.get_all_students()
+        students = self._student_service.list_students()
         
         if not students:
             print("No students found.")
@@ -173,7 +188,7 @@ Others:
             deadline_str = args[2]
             deadline = datetime.strptime(deadline_str, '%Y-%m-%d').date()
             
-            problem = self._problem_repo.add_problem(lab_number, problem_number, description, deadline)
+            problem = self._problem_service.add_problem(lab_number, problem_number, description, deadline)
             print(f"Problem added successfully: Lab {lab_number}, Problem {problem_number}, Deadline: {deadline}")
         except ValueError as e:
             print(f"Error: {e}")
@@ -197,7 +212,7 @@ Others:
             lab_number = int(lab_number)
             problem_number = int(problem_number)
             
-            self._problem_repo.remove_problem(lab_number, problem_number)
+            self._problem_service.remove_problem(lab_number, problem_number)
             print(f"Problem {lab_number}_{problem_number} removed successfully")
         except ValueError as e:
             print(f"Error: {e}")
@@ -206,7 +221,7 @@ Others:
 
     def _handle_list_problems(self, args):
         """Handle list_problems command"""
-        problems = self._problem_repo.list_problems()
+        problems = self._problem_service.list_problems()
         
         if not problems:
             print("No problems found.")
@@ -239,7 +254,7 @@ Others:
                 print("Error: search_type must be 'name', 'id', or 'group'")
                 return
             
-            results = self._student_repo.search_students(search_term, search_type)
+            results = self._student_service.search_students(search_term, search_type)
             
             if not results:
                 print(f"No students found with {search_type} '{search_term}'")
@@ -271,7 +286,7 @@ Others:
                 print("Error: lab_problem_id must be in format <labnumber>_<problemnumber>")
                 return
             
-            results = self._problem_repo.search_problems_by_id(lab_problem_id)
+            results = self._problem_service.search_problems_by_id(lab_problem_id)
             
             if not results:
                 print(f"No problem found with ID '{lab_problem_id}'")
@@ -287,3 +302,76 @@ Others:
                 
         except Exception as e:
             print(f"Unexpected error: {e}")
+
+    def _handle_create_assignment(self, args):
+        """Handle create_assignment command"""
+        if len(args) != 2:
+            print("Usage: create_assignment <student_id> <problem_id>")
+            print("Example: create_assignment 1 7_1")
+            return
+        
+        try:
+            student_id = int(args[0])
+            problem_id = args[1]
+            
+            if '_' not in problem_id:
+                print("Error: problem_id must be in format <labnumber>_<problemnumber>")
+                return
+            
+            assignment = self._assignment_service.create_assignment(student_id, problem_id)
+            student_name = self._assignment_service.get_student_name(student_id)
+            problem_desc = self._assignment_service.get_problem_description(problem_id)
+            
+            print(f"Assignment created: Student {student_name} (ID: {student_id}) assigned to Problem {problem_id} ({problem_desc})")
+        except ValueError as e:
+            print(f"Error: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+
+    def _handle_grade_assignment(self, args):
+        """Handle grade_assignment command"""
+        if len(args) != 2:
+            print("Usage: grade_assignment <assignment_id> <grade>")
+            print("Example: grade_assignment 1 9.5")
+            print("Grade must be between 0 and 10")
+            return
+        
+        try:
+            assignment_id = int(args[0])
+            grade = float(args[1])
+            
+            # Get assignment info for confirmation message
+            assignment = self._assignment_service.get_assignment_by_id(assignment_id)
+            if assignment is None:
+                print(f"Error: Assignment with ID {assignment_id} not found")
+                return
+            
+            student_name = self._assignment_service.get_student_name(assignment.get_student_id())
+            problem_desc = self._assignment_service.get_problem_description(assignment.get_problem_id())
+            
+            self._assignment_service.grade_assignment(assignment_id, grade)
+            print(f"Assignment graded: Student {student_name} - Problem {assignment.get_problem_id()} ({problem_desc}) - Grade: {grade}")
+        except ValueError as e:
+            print(f"Error: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+
+    def _handle_list_assignments(self, args):
+        """Handle list_assignments command"""
+        assignments = self._assignment_service.list_assignments()
+        
+        if not assignments:
+            print("No assignments found.")
+            return
+        
+        print("ASSIGNMENTS:")
+        print("-" * 90)
+        print(f"{'ID':<5} {'Student':<20} {'Problem':<10} {'Description':<25} {'Grade':<10}")
+        print("-" * 90)
+        
+        for assignment in assignments:
+            student_name = self._assignment_service.get_student_name(assignment.get_student_id())
+            problem_desc = self._assignment_service.get_problem_description(assignment.get_problem_id())
+            grade_str = str(assignment.get_grade()) if assignment.has_grade() else "Not graded"
+            
+            print(f"{assignment.get_assignment_id():<5} {student_name:<20} {assignment.get_problem_id():<10} {problem_desc[:25]:<25} {grade_str:<10}")

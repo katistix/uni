@@ -1,12 +1,12 @@
-from . import model
+from domain.student import Student
 
 class StudentRepository:
-    def __init__(self, student_list: list[model.Student]):
+    def __init__(self, student_list: list[Student]):
         self._student_list = student_list
         self._next_id = max((s.id for s in student_list), default=0) + 1
 
-    def add_student(self, name: str, group: int) -> model.Student:
-        new_student = model.Student(self._next_id, name, group)
+    def add_student(self, name: str, group: int) -> Student:
+        new_student = Student(self._next_id, name, group)
         self._student_list.append(new_student)
         self._next_id += 1
         return new_student
@@ -28,11 +28,11 @@ class StudentRepository:
                 return
         raise ValueError(f"Student with id {student_id} not found")
 
-    def get_all_students(self) -> list[model.Student]:
+    def get_all_students(self) -> list[Student]:
         """Return a copy of all students in the repository."""
         return self._student_list.copy()
 
-    def search_students(self, search_term: str, search_type: str) -> list[model.Student]:
+    def search_students(self, search_term: str, search_type: str) -> list[Student]:
         """Search for students by name, id, or group.
         
         Args:

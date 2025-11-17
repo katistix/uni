@@ -1,31 +1,51 @@
-import student.model
-import student.repository  
-import student.service
-import problem.model
-import problem.repository
+import domain.student
+import repos.student  
+import services.student
+import domain.problem
+import repos.problem
+import services.problem
+import domain.assignment
+import repos.assignment
+import services.assignment
 
 
 def run_all_tests():
     """Run all module tests"""
     print("Running Student Model tests...")
-    student.model.test_module()
+    domain.student.test_module()
     print("✓ Student Model tests passed")
     
     print("Running Student Repository tests...")
-    student.repository.test_module()
+    repos.student.test_module()
     print("✓ Student Repository tests passed")
     
     print("Running Student Service tests...")
-    student.service.test_module()
+    services.student.test_module()
     print("✓ Student Service tests passed")
     
     print("Running Problem Model tests...")
-    problem.model.test_module()
+    domain.problem.test_module()
     print("✓ Problem Model tests passed")
     
     print("Running Problem Repository tests...")
-    problem.repository.test_module()
+    repos.problem.test_module()
     print("✓ Problem Repository tests passed")
+    
+    print("Running Problem Service tests...")
+    services.problem.test_module()
+    print("✓ Problem Service tests passed")
+    
+    print("Running Assignment Model tests...")
+    domain.assignment.test_module()
+    print("✓ Assignment Model tests passed")
+    
+    print("Running Assignment Repository tests...")
+    repos.assignment.test_module()
+    print("✓ Assignment Repository tests passed")
+    
+    print("Running Assignment Service tests...")
+    services.assignment.test_module()
+    print("✓ Assignment Service tests passed")
     
     print("\nAll tests passed! ✅")
 

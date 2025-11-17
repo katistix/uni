@@ -1,12 +1,12 @@
-from . import model
+from domain.problem import Problem
 from datetime import date
 
 class ProblemRepository:
-    def __init__(self, problem_list: list[model.Problem]):
+    def __init__(self, problem_list: list[Problem]):
         self._problem_list = problem_list
 
-    def add_problem(self, lab_number: int, problem_number: int, description: str, deadline: date) -> model.Problem:
-        new_problem = model.Problem(lab_number, problem_number, description, deadline)
+    def add_problem(self, lab_number: int, problem_number: int, description: str, deadline: date) -> Problem:
+        new_problem = Problem(lab_number, problem_number, description, deadline)
         self._problem_list.append(new_problem)
         return new_problem
 
@@ -27,11 +27,11 @@ class ProblemRepository:
                 return
         raise ValueError(f"Problem {lab_number}.{problem_number} not found")
 
-    def list_problems(self) -> list[model.Problem]:
+    def list_problems(self) -> list[Problem]:
         """Return a copy of all problems in the repository."""
         return self._problem_list.copy()
 
-    def search_problems_by_id(self, lab_problem_id: str) -> list[model.Problem]:
+    def search_problems_by_id(self, lab_problem_id: str) -> list[Problem]:
         """Search for problems by id in format 'lab_problem' (e.g., '7_1').
         
         Args:
