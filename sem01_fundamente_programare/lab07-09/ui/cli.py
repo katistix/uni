@@ -104,6 +104,10 @@ Assignment operations:
   grade_assignment <assignment_id> <grade>              - Grade an assignment (0-10)
   list_assignments                                      - List all assignments
 
+Random generation:
+  generate_student                                      - Generate and add a random student
+  generate_problem                                      - Generate and add a random problem
+
 Others:
   clear                                   - Clear the screen
   help                                    - Show this message

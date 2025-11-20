@@ -1,3 +1,4 @@
+import random
 from repos.student import StudentRepository
 from domain.student import Student
 
@@ -5,6 +6,17 @@ from domain.student import Student
 class StudentService:
     def __init__(self):
         self._student_repo = StudentRepository([])
+
+    def generate_random_name(self) -> str:
+        char_options = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        # choose a random length, or fix one — here I'll pick length 8
+        length = 8
+        return ''.join(random.choice(char_options) for _ in range(length))
+
+    def generate_random_group(self) -> int:
+        # choose any range you want — here I'll use 1 to 999
+        return random.randint(1, 999)
+
 
     def add_student(self,name:str,group:int):
         student = self._student_repo.add_student(name, group)
@@ -40,6 +52,24 @@ class StudentService:
 
 def test_module():
     service = StudentService()
+
+    random_seed = 123
+    random.seed(random_seed)
+
+    # Test random functionality
+    random_name = service.generate_random_name()
+    assert random_name == "drfXArgc"
+    random_name = service.generate_random_name()
+    assert random_name == "yIJvvdki"
+    random_name = service.generate_random_name()
+    assert random_name == "vJvSpkaB"
+
+    random_group = service.generate_random_group()
+    assert random_group == 793
+    random_group = service.generate_random_group()
+    assert random_group == 90
+    random_group = service.generate_random_group()
+    assert random_group == 900
     
     student1 = service.add_student("John Doe", 917)
     assert student1.get_name() == "John Doe"
