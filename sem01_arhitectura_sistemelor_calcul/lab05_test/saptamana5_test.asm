@@ -1,7 +1,12 @@
+; IMPORTANT: nu mai retin daca acesta e codul initial
+; sau cel pe care l-am modificat eu.
+
+
 ; Expresie: (a + b + d) - (a - c + d) + (b - c)
 ; Tipuri fara semn: a=byte, b=word, c=dword, d=qword
 ; Rezultat dorit pe 64 de biti in EDX:EAX
 ; ATENTIE: Aceasta varianta contine 12 greseli intentionate.
+
 
 bits 32
 global  start
