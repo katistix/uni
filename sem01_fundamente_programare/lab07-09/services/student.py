@@ -17,7 +17,6 @@ class StudentService:
         # choose any range you want — here I'll use 1 to 999
         return random.randint(1, 999)
 
-
     def add_student(self,name:str,group:int):
         student = self._student_repo.add_student(name, group)
         return student

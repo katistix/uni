@@ -4,12 +4,29 @@ from datetime import datetime, date
 from services.problem import ProblemService
 from services.student import StudentService
 from services.assignment import AssignmentService
+from services.persistence_service import PersistenceService
+from stats.statistics_calculator import StatisticsCalculator, ReportExporter
 
 class CLI:
     def __init__(self):
         self._problem_service = ProblemService()
         self._student_service = StudentService()
         self._assignment_service = AssignmentService()
+        
+        # Initialize persistence service
+        self._persistence_service = None
+        try:
+            # Import here to avoid initial import errors
+            import sys
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            sys.path.insert(0, parent_dir)
+            
+            from services.persistence_service import PersistenceService
+            self._persistence_service = PersistenceService()
+            print("Persistence service initialized successfully.")
+        except Exception as e:
+            print(f"Warning: Could not initialize persistence service: {e}")
         
         # Share repositories between services for data consistency
         self._assignment_service.set_student_repo(self._student_service._student_repo)
@@ -31,6 +48,17 @@ class CLI:
             "create_assignment": self._handle_create_assignment,
             "grade_assignment": self._handle_grade_assignment,
             "list_assignments": self._handle_list_assignments,
+
+            # Statistics and reporting
+            "stats_students": self._handle_stats_students,
+            "stats_problems": self._handle_stats_problems,
+            "report_group": self._handle_report_group,
+            "export_grades": self._handle_export_grades,
+
+            # Data persistence
+            "save_data": self._handle_save_data,
+            "load_data": self._handle_load_data,
+            "export_data": self._handle_export_data,
 
             # Helpers
             'help': self._handle_help,
@@ -103,6 +131,17 @@ Assignment operations:
                                                         Format: problem_id as '7_1'
   grade_assignment <assignment_id> <grade>              - Grade an assignment (0-10)
   list_assignments                                      - List all assignments
+
+Statistics and reporting:
+  stats_students                                        - Show detailed student statistics
+  stats_problems                                        - Show detailed problem statistics
+  report_group <group_number>                           - Generate detailed report for a group
+  export_grades <filepath>                              - Export all grades to CSV file
+
+Data persistence:
+  save_data                                             - Save all data to CSV files
+  load_data                                             - Load data from CSV files  
+  export_data <directory>                               - Export data to directory
 
 Random generation:
   generate_student                                      - Generate and add a random student
@@ -379,3 +418,200 @@ Others:
             grade_str = str(assignment.get_grade()) if assignment.has_grade() else "Not graded"
             
             print(f"{assignment.get_assignment_id():<5} {student_name:<20} {assignment.get_problem_id():<10} {problem_desc[:25]:<25} {grade_str:<10}")
+
+    def _get_statistics_calculator(self):
+        """Get a statistics calculator instance with current data"""
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        sys.path.insert(0, parent_dir)
+        
+        from stats.statistics_calculator import StatisticsCalculator
+        
+        students = self._student_service.list_students()
+        problems = self._problem_service.list_problems()
+        assignments = self._assignment_service.list_assignments()
+        
+        return StatisticsCalculator(students, problems, assignments)
+
+    def _handle_stats_students(self, args):
+        """Handle stats_students command"""
+        try:
+            calc = self._get_statistics_calculator()
+            stats = calc.calculate_student_statistics()
+            
+            if not stats:
+                print("No student statistics available.")
+                return
+            
+            print("STUDENT STATISTICS:")
+            print("-" * 100)
+            print(f"{'ID':<5} {'Name':<20} {'Group':<8} {'Total':<8} {'Graded':<8} {'Average':<10}")
+            print("-" * 100)
+            
+            for stat in stats:
+                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
+                print(f"{stat.student_id:<5} {stat.student_name:<20} {stat.group:<8} {stat.total_assignments:<8} {stat.graded_assignments:<8} {avg_str:<10}")
+                
+        except Exception as e:
+            print(f"Error generating student statistics: {e}")
+
+    def _handle_stats_problems(self, args):
+        """Handle stats_problems command"""
+        try:
+            calc = self._get_statistics_calculator()
+            stats = calc.calculate_problem_statistics()
+            
+            if not stats:
+                print("No problem statistics available.")
+                return
+            
+            print("PROBLEM STATISTICS:")
+            print("-" * 120)
+            print(f"{'Problem ID':<12} {'Description':<30} {'Total':<8} {'Graded':<8} {'Completion %':<12} {'Average':<10}")
+            print("-" * 120)
+            
+            for stat in stats:
+                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
+                print(f"{stat.problem_id:<12} {stat.description[:30]:<30} {stat.total_assignments:<8} {stat.graded_assignments:<8} {stat.completion_rate:<12.1f} {avg_str:<10}")
+                
+        except Exception as e:
+            print(f"Error generating problem statistics: {e}")
+
+    def _handle_report_group(self, args):
+        """Handle report_group command"""
+        if len(args) != 1:
+            print("Usage: report_group <group_number>")
+            print("Example: report_group 917")
+            return
+        
+        try:
+            group_number = int(args[0])
+            calc = self._get_statistics_calculator()
+            report = calc.generate_group_report(group_number)
+            
+            if report.total_students == 0:
+                print(f"No students found in group {group_number}")
+                return
+            
+            print(f"GROUP {group_number} REPORT:")
+            print("-" * 60)
+            print(f"Total Students:              {report.total_students}")
+            print(f"Students with Assignments:   {report.students_with_assignments}")
+            print(f"Total Assignments:           {report.total_assignments}")
+            print(f"Graded Assignments:          {report.graded_assignments}")
+            
+            if report.group_average_grade is not None:
+                print(f"Group Average Grade:         {report.group_average_grade:.2f}")
+            else:
+                print(f"Group Average Grade:         N/A")
+            
+            if report.best_student:
+                print(f"Best Student:                {report.best_student[0]} ({report.best_student[1]:.2f})")
+            else:
+                print(f"Best Student:                N/A")
+                
+            if report.lowest_student:
+                print(f"Lowest Student:              {report.lowest_student[0]} ({report.lowest_student[1]:.2f})")
+            else:
+                print(f"Lowest Student:              N/A")
+                
+        except ValueError:
+            print("Error: Group number must be a valid integer")
+        except Exception as e:
+            print(f"Error generating group report: {e}")
+
+    def _handle_export_grades(self, args):
+        """Handle export_grades command"""
+        if len(args) != 1:
+            print("Usage: export_grades <filepath>")
+            print("Example: export_grades /path/to/grades.csv")
+            return
+        
+        try:
+            filepath = args[0]
+            
+            # Import ReportExporter
+            import sys
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            sys.path.insert(0, parent_dir)
+            
+            from stats.statistics_calculator import ReportExporter
+            
+            students = self._student_service.list_students()
+            assignments = self._assignment_service.list_assignments()
+            
+            ReportExporter.export_all_grades(students, assignments, filepath)
+            print(f"Grades exported successfully to: {filepath}")
+            
+        except Exception as e:
+            print(f"Error exporting grades: {e}")
+
+    def _handle_save_data(self, args):
+        """Handle save_data command"""
+        if self._persistence_service is None:
+            print("Error: Persistence service not available")
+            return
+        
+        try:
+            self._persistence_service.save_application_data(
+                self._student_service, 
+                self._problem_service, 
+                self._assignment_service
+            )
+        except Exception as e:
+            print(f"Error saving data: {e}")
+
+    def _handle_load_data(self, args):
+        """Handle load_data command"""
+        if self._persistence_service is None:
+            print("Error: Persistence service not available")
+            return
+        
+        try:
+            students, problems, assignments = self._persistence_service.load_application_data()
+            
+            # Clear and repopulate repositories with loaded data
+            self._load_data_into_repositories(students, problems, assignments)
+            
+            print(f"Loaded {len(students)} students, {len(problems)} problems, {len(assignments)} assignments")
+            print("Data successfully loaded into application repositories.")
+        except Exception as e:
+            print(f"Error loading data: {e}")
+    
+    def _load_data_into_repositories(self, students, problems, assignments):
+        """Load data into the CLI repositories, replacing existing data"""
+        from repos.student import StudentRepository
+        from repos.problem import ProblemRepository
+        from repos.assignment import AssignmentRepository
+        
+        # Replace student repository
+        self._student_service._student_repo = StudentRepository(students)
+        
+        # Replace problem repository  
+        self._problem_service._problem_repo = ProblemRepository(problems)
+        
+        # Replace assignment repository
+        self._assignment_service._assignment_repo = AssignmentRepository(assignments)
+        
+        # Update shared repositories to maintain consistency
+        self._assignment_service.set_student_repo(self._student_service._student_repo)
+        self._assignment_service.set_problem_repo(self._problem_service._problem_repo)
+
+    def _handle_export_data(self, args):
+        """Handle export_data command"""
+        if len(args) != 1:
+            print("Usage: export_data <directory>")
+            print("Example: export_data /path/to/export")
+            return
+        
+        if self._persistence_service is None:
+            print("Error: Persistence service not available")
+            return
+        
+        try:
+            export_dir = args[0]
+            self._persistence_service.export_data(export_dir)
+        except Exception as e:
+            print(f"Error exporting data: {e}")
