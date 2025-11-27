@@ -59,6 +59,7 @@ class CLI:
             "difficult_problems": self._handle_difficult_problems,
             "grade_distribution": self._handle_grade_distribution,
             "failing_students": self._handle_failing_students,
+            "raport": self._handle_raport,
 
             # Data persistence
             "save_data": self._handle_save_data,
@@ -147,6 +148,7 @@ Statistics and reporting:
   difficult_problems                                    - Show problems ranked by difficulty (lowest grades)
   grade_distribution                                    - Show grade distribution statistics
   failing_students [threshold]                          - Show students below grade threshold (default: 5.0)
+  raport [k]                                            - Generate k*k matrix report with top k students and problems (default: 3)
 
 Data persistence:
   save_data                                             - Save all data to CSV files
@@ -682,6 +684,55 @@ Others:
             print("Error: Threshold must be a valid number")
         except Exception as e:
             print(f"Error generating failing students: {e}")
+
+    def _handle_raport(self, args):
+        """Handle raport command - generates k*k matrix report"""
+        try:
+            k = 3  # default
+            if args and len(args) > 0:
+                k = int(args[0])
+                
+            calc = self._get_statistics_calculator()
+            report = calc.generate_top_report(k)
+            
+            if not report['top_students'] or not report['top_problems']:
+                print("Not enough data for generating report.")
+                return
+                
+            print(f"TOP {k} STUDENTS vs TOP {k} PROBLEMS REPORT:")
+            print("=" * (20 + k * 15))
+            
+            # Print header with problem IDs
+            header = f"{'Student':<20}"
+            for problem_stat in report['top_problems']:
+                header += f"{problem_stat.problem_id:<15}"
+            print(header)
+            print("-" * (20 + k * 15))
+            
+            # Print matrix data
+            for student_row in report['matrix_data']:
+                line = f"{student_row['student_name'][:19]:<20}"
+                for problem_stat in report['top_problems']:
+                    problem_id = problem_stat.problem_id
+                    problem_data = student_row['problem_data'][problem_id]
+                    
+                    if problem_data['status'] == "Not assigned":
+                        cell = "Not assigned"
+                    elif problem_data['status'] == "Assigned":
+                        cell = "Ungraded"
+                    else:
+                        grade = problem_data['grade']
+                        if isinstance(grade, (int, float)):
+                            cell = f"{grade:.1f}"
+                        else:
+                            cell = str(grade)
+                    
+                    line += f"{cell:<15}"
+                print(line)       
+        except ValueError:
+            print("Error: k must be a valid number")
+        except Exception as e:
+            print(f"Error generating report: {e}")
 
     def _handle_save_data(self, args):
         """Handle save_data command"""

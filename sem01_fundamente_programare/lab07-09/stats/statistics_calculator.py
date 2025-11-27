@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from dataclasses import dataclass
 import csv
 
@@ -269,6 +269,13 @@ class StatisticsCalculator:
         stats.sort(key=lambda s: s.total_assignments, reverse=True)
         return stats
     
+    def get_top_problems(self, limit: int = 10) -> List[ProblemStatistics]:
+        """Get top problems ranked by number of assignments (most popular)"""
+        stats = self.calculate_problem_statistics()
+        # Sort by total assignments descending (most assignments = most popular)
+        stats.sort(key=lambda s: s.total_assignments, reverse=True)
+        return stats[:limit]
+    
     def get_students_below_threshold(self, threshold: float = 5.0) -> List[StudentStatistics]:
         """Get students with average grade below threshold"""
         stats = self.calculate_student_statistics()
@@ -306,6 +313,56 @@ class StatisticsCalculator:
                         distribution["0-4.99"] += 1
         
         return distribution
+    
+    def generate_top_report(self, k: int = 3):
+        """Generate a k*k report with top k students and top k problems"""
+        top_students = self.get_top_students(k)
+        top_problems = self.get_top_problems(k)
+        
+        # Create matrix data
+        matrix_data = []
+        
+        for student_stat in top_students:
+            student_row = {
+                'student_id': student_stat.student_id,
+                'student_name': student_stat.student_name,
+                'student_avg': student_stat.average_grade,
+                'problem_data': {}
+            }
+            
+            # For each top problem, find this student's performance
+            for problem_stat in top_problems:
+                problem_id = problem_stat.problem_id
+                
+                # Find assignments for this student and problem
+                student_assignments = [a for a in self.assignments 
+                                     if a.get_student_id() == student_stat.student_id 
+                                     and a.get_problem_id() == problem_id]
+                
+                if student_assignments:
+                    # Get the grade if exists
+                    assignment = student_assignments[0]  # Should be only one
+                    grade = assignment.get_grade() if assignment.has_grade() else "Not graded"
+                    status = "Graded" if assignment.has_grade() else "Assigned"
+                else:
+                    grade = "Not assigned"
+                    status = "Not assigned"
+                
+                student_row['problem_data'][problem_id] = {
+                    'grade': grade,
+                    'status': status,
+                    'problem_desc': problem_stat.description,
+                    'problem_assignments': problem_stat.total_assignments
+                }
+            
+            matrix_data.append(student_row)
+        
+        return {
+            'top_students': top_students,
+            'top_problems': top_problems,
+            'matrix_data': matrix_data,
+            'k': k
+        }
 
 
 class ReportExporter:
