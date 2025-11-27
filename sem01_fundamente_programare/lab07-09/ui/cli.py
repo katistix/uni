@@ -319,18 +319,18 @@ Other:
             # Print header with problem IDs
             header = f"{'Student':<20}"
             for problem_stat in top_problems:
-                header += f"{problem_stat['problem_id']:<15}"
+                header += f"{problem_stat.get_problem_id():<15}"
             print(header)
             print("-" * (20 + k * 15))
             
             # Generate and print matrix data
             for student_stat in top_students:
-                student_id = student_stat['student_id']
-                student_name = student_stat['student_name']
+                student_id = student_stat.get_student_id()
+                student_name = student_stat.get_student_name()
                 line = f"{student_name[:19]:<20}"
                 
                 for problem_stat in top_problems:
-                    problem_id = problem_stat['problem_id']
+                    problem_id = problem_stat.get_problem_id()
                     
                     # Find assignment for this student and problem
                     assignment = None
@@ -355,12 +355,13 @@ Other:
             print("SUMMARY:")
             print(f"Top {k} Students (by average grade):")
             for i, student in enumerate(top_students, 1):
-                avg_str = f"{student['average_grade']:.2f}" if student['average_grade'] is not None else "N/A"
-                print(f"  {i}. {student['student_name']} (Group {student['group']}) - {avg_str}")
+                avg_grade = student.get_average_grade()
+                avg_str = f"{avg_grade:.2f}" if avg_grade is not None else "N/A"
+                print(f"  {i}. {student.get_student_name()} (Group {student.get_group()}) - {avg_str}")
                 
             print(f"\nTop {k} Problems (by number of assignments):")
             for i, problem in enumerate(top_problems, 1):
-                print(f"  {i}. {problem['problem_id']}: {problem['description'][:40]} - {problem['total_assignments']} assignments")
+                print(f"  {i}. {problem.get_problem_id()}: {problem.get_description()[:40]} - {problem.get_total_assignments()} assignments")
                 
         except ValueError:
             print("Error: k must be a valid number")
