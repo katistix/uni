@@ -39,8 +39,16 @@ class CLI:
             # Basic CRUD operations
             "add_student": self._handle_add_student,
             "list_students": self._handle_list_students,
+            "remove_student": self._handle_remove_student,
+            "modify_student": self._handle_modify_student,
+            "search_students": self._handle_search_students,
+            
             "add_problem": self._handle_add_problem,
             "list_problems": self._handle_list_problems,
+            "remove_problem": self._handle_remove_problem,
+            "modify_problem": self._handle_modify_problem,
+            "search_problems": self._handle_search_problems,
+            
             "create_assignment": self._handle_create_assignment,
             "grade_assignment": self._handle_grade_assignment,
             "list_assignments": self._handle_list_assignments,
@@ -101,11 +109,17 @@ AVAILABLE COMMANDS:
 Students:
   add_student <name> <group>        - Add a new student
   list_students                     - List all students
+  remove_student <student_id>       - Remove a student by ID
+  modify_student <student_id> <name> <group>  - Modify student details
+  search_students <term> <type>     - Search students (type: name, id, group)
 
 Problems:
   add_problem <lab_problem> <description> <deadline>  - Add a new problem
                                                       Format: lab_problem as '7_1', deadline as 'YYYY-MM-DD'
   list_problems                     - List all problems
+  remove_problem <lab_number> <problem_number>  - Remove a problem
+  modify_problem <lab_number> <problem_number> <description> <deadline>  - Modify problem details
+  search_problems <problem_id>      - Search problems by ID (format: '7_1')
 
 Assignments:
   create_assignment <student_id> <problem_id>  - Assign a problem to a student
@@ -168,6 +182,82 @@ Other:
         except Exception as e:
             print(f"Error listing students: {e}")
 
+    def _handle_remove_student(self, args):
+        """Handle remove_student command"""
+        if len(args) != 1:
+            print("Usage: remove_student <student_id>")
+            return
+        
+        try:
+            student_id = int(args[0])
+            self._student_service.remove_student(student_id)
+            print(f"Student with ID {student_id} removed successfully.")
+        except ValueError as e:
+            if "not found" in str(e):
+                print(f"Error: Student with ID {args[0]} not found.")
+            else:
+                print(f"Error: {e}")
+        except Exception as e:
+            print(f"Error removing student: {e}")
+
+    def _handle_modify_student(self, args):
+        """Handle modify_student command"""
+        if len(args) != 3:
+            print("Usage: modify_student <student_id> <new_name> <new_group>")
+            return
+        
+        try:
+            student_id = int(args[0])
+            new_name = args[1]
+            new_group = int(args[2])
+            
+            self._student_service.modify_student(student_id, new_name, new_group)
+            print(f"Student with ID {student_id} modified successfully.")
+        except ValueError as e:
+            if "not found" in str(e):
+                print(f"Error: Student with ID {args[0]} not found.")
+            elif "invalid literal for int()" in str(e):
+                print("Error: Student ID and group must be numbers.")
+            else:
+                print(f"Error: {e}")
+        except Exception as e:
+            print(f"Error modifying student: {e}")
+
+    def _handle_search_students(self, args):
+        """Handle search_students command"""
+        if len(args) != 2:
+            print("Usage: search_students <search_term> <search_type>")
+            print("Search types: name, id, group")
+            print("Examples:")
+            print("  search_students john name")
+            print("  search_students 1 id")
+            print("  search_students 917 group")
+            return
+        
+        try:
+            search_term = args[0]
+            search_type = args[1].lower()
+            
+            if search_type not in ['name', 'id', 'group']:
+                print("Error: Search type must be 'name', 'id', or 'group'")
+                return
+            
+            results = self._student_service.search_students(search_term, search_type)
+            
+            if not results:
+                print(f"No students found matching '{search_term}' in {search_type}")
+                return
+            
+            print(f"Found {len(results)} student(s):")
+            print("-" * 50)
+            print(f"{'ID':<5} {'Name':<20} {'Group':<8}")
+            print("-" * 50)
+            for student in results:
+                print(f"{student.get_id():<5} {student.get_name():<20} {student.get_group():<8}")
+                
+        except Exception as e:
+            print(f"Error searching students: {e}")
+
     def _handle_add_problem(self, args):
         """Handle add_problem command"""
         if len(args) != 3:
@@ -218,6 +308,87 @@ Other:
                 
         except Exception as e:
             print(f"Error listing problems: {e}")
+
+    def _handle_remove_problem(self, args):
+        """Handle remove_problem command"""
+        if len(args) != 2:
+            print("Usage: remove_problem <lab_number> <problem_number>")
+            print("Example: remove_problem 7 1")
+            return
+        
+        try:
+            lab_number = int(args[0])
+            problem_number = int(args[1])
+            
+            self._problem_service.remove_problem(lab_number, problem_number)
+            print(f"Problem {lab_number}_{problem_number} removed successfully.")
+        except ValueError as e:
+            if "not found" in str(e):
+                print(f"Error: Problem {args[0]}_{args[1]} not found.")
+            elif "invalid literal for int()" in str(e):
+                print("Error: Lab number and problem number must be valid integers.")
+            else:
+                print(f"Error: {e}")
+        except Exception as e:
+            print(f"Error removing problem: {e}")
+
+    def _handle_modify_problem(self, args):
+        """Handle modify_problem command"""
+        if len(args) != 4:
+            print("Usage: modify_problem <lab_number> <problem_number> <new_description> <new_deadline>")
+            print("Example: modify_problem 7 1 'Updated sort problem' 2024-12-20")
+            return
+        
+        try:
+            lab_number = int(args[0])
+            problem_number = int(args[1])
+            new_description = args[2]
+            deadline_str = args[3]
+            
+            # Parse deadline
+            try:
+                deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+            except ValueError:
+                print("Error: Deadline must be in YYYY-MM-DD format")
+                return
+                
+            self._problem_service.modify_problem(lab_number, problem_number, new_description, deadline)
+            print(f"Problem {lab_number}_{problem_number} modified successfully.")
+        except ValueError as e:
+            if "not found" in str(e):
+                print(f"Error: Problem {args[0]}_{args[1]} not found.")
+            elif "invalid literal for int()" in str(e):
+                print("Error: Lab number and problem number must be valid integers.")
+            else:
+                print(f"Error: {e}")
+        except Exception as e:
+            print(f"Error modifying problem: {e}")
+
+    def _handle_search_problems(self, args):
+        """Handle search_problems command"""
+        if len(args) != 1:
+            print("Usage: search_problems <problem_id>")
+            print("Example: search_problems 7_1")
+            return
+        
+        try:
+            problem_id = args[0]
+            results = self._problem_service.search_problems_by_id(problem_id)
+            
+            if not results:
+                print(f"No problems found matching ID '{problem_id}'")
+                return
+            
+            print(f"Found {len(results)} problem(s):")
+            print("-" * 80)
+            print(f"{'Lab':<5} {'Problem':<8} {'Description':<30} {'Deadline':<15}")
+            print("-" * 80)
+            for problem in results:
+                deadline_str = problem.get_deadline().strftime("%Y-%m-%d") if problem.get_deadline() else "N/A"
+                print(f"{problem.get_lab_number():<5} {problem.get_problem_number():<8} {problem.get_description():<30} {deadline_str:<15}")
+                
+        except Exception as e:
+            print(f"Error searching problems: {e}")
 
     def _handle_create_assignment(self, args):
         """Handle create_assignment command"""
