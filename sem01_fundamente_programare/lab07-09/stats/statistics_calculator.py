@@ -227,6 +227,85 @@ class StatisticsCalculator:
         """Get list of all group numbers"""
         groups = set(s.get_group() for s in self.students)
         return sorted(groups)
+    
+    def get_top_students(self, limit: int = 10) -> List[StudentStatistics]:
+        """Get top students ranked by average grade"""
+        stats = self.calculate_student_statistics()
+        # Filter only students with grades and sort by average grade descending
+        graded_stats = [s for s in stats if s.average_grade is not None]
+        graded_stats.sort(key=lambda s: s.average_grade or 0, reverse=True)
+        return graded_stats[:limit]
+    
+    def get_group_rankings(self) -> List[Tuple[int, float, int]]:
+        """Get groups ranked by average grade. Returns (group_number, average_grade, student_count)"""
+        groups = self.get_all_groups()
+        group_rankings = []
+        
+        for group in groups:
+            report = self.generate_group_report(group)
+            if report.group_average_grade is not None:
+                group_rankings.append((
+                    group, 
+                    report.group_average_grade, 
+                    report.students_with_assignments
+                ))
+        
+        # Sort by average grade descending
+        group_rankings.sort(key=lambda x: x[1], reverse=True)
+        return group_rankings
+    
+    def get_difficult_problems(self) -> List[ProblemStatistics]:
+        """Get problems ranked by difficulty (lowest average grade)"""
+        stats = self.calculate_problem_statistics()
+        # Filter only problems with grades and sort by average grade ascending (lowest first = most difficult)
+        graded_stats = [s for s in stats if s.average_grade is not None]
+        graded_stats.sort(key=lambda s: s.average_grade or 0)
+        return graded_stats
+    
+    def get_problem_popularity(self) -> List[ProblemStatistics]:
+        """Get problems ranked by how many students attempted them"""
+        stats = self.calculate_problem_statistics()
+        # Sort by total assignments descending
+        stats.sort(key=lambda s: s.total_assignments, reverse=True)
+        return stats
+    
+    def get_students_below_threshold(self, threshold: float = 5.0) -> List[StudentStatistics]:
+        """Get students with average grade below threshold"""
+        stats = self.calculate_student_statistics()
+        return [s for s in stats if s.average_grade is not None and s.average_grade < threshold]
+    
+    def get_grade_distribution(self) -> Dict[str, int]:
+        """Get distribution of grades by ranges"""
+        distribution = {
+            "10": 0,      # Grade 10
+            "9-9.99": 0,  # Grade 9.00-9.99
+            "8-8.99": 0,  # Grade 8.00-8.99
+            "7-7.99": 0,  # Grade 7.00-7.99
+            "6-6.99": 0,  # Grade 6.00-6.99
+            "5-5.99": 0,  # Grade 5.00-5.99
+            "0-4.99": 0   # Below 5 (failing)
+        }
+        
+        for assignment in self.assignments:
+            if assignment.has_grade():
+                grade = assignment.get_grade()
+                if grade is not None:
+                    if grade == 10:
+                        distribution["10"] += 1
+                    elif grade >= 9:
+                        distribution["9-9.99"] += 1
+                    elif grade >= 8:
+                        distribution["8-8.99"] += 1
+                    elif grade >= 7:
+                        distribution["7-7.99"] += 1
+                    elif grade >= 6:
+                        distribution["6-6.99"] += 1
+                    elif grade >= 5:
+                        distribution["5-5.99"] += 1
+                    else:
+                        distribution["0-4.99"] += 1
+        
+        return distribution
 
 
 class ReportExporter:

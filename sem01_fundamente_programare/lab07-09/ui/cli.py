@@ -54,6 +54,11 @@ class CLI:
             "stats_problems": self._handle_stats_problems,
             "report_group": self._handle_report_group,
             "export_grades": self._handle_export_grades,
+            "top_students": self._handle_top_students,
+            "top_groups": self._handle_top_groups,
+            "difficult_problems": self._handle_difficult_problems,
+            "grade_distribution": self._handle_grade_distribution,
+            "failing_students": self._handle_failing_students,
 
             # Data persistence
             "save_data": self._handle_save_data,
@@ -137,6 +142,11 @@ Statistics and reporting:
   stats_problems                                        - Show detailed problem statistics
   report_group <group_number>                           - Generate detailed report for a group
   export_grades <filepath>                              - Export all grades to CSV file
+  top_students [limit]                                  - Show top students by average grade (default: 10)
+  top_groups                                            - Show groups ranked by average grade
+  difficult_problems                                    - Show problems ranked by difficulty (lowest grades)
+  grade_distribution                                    - Show grade distribution statistics
+  failing_students [threshold]                          - Show students below grade threshold (default: 5.0)
 
 Data persistence:
   save_data                                             - Save all data to CSV files
@@ -547,6 +557,131 @@ Others:
             
         except Exception as e:
             print(f"Error exporting grades: {e}")
+
+    def _handle_top_students(self, args):
+        """Handle top_students command"""
+        try:
+            limit = 10  # default
+            if args and len(args) > 0:
+                limit = int(args[0])
+                
+            calc = self._get_statistics_calculator()
+            top_students = calc.get_top_students(limit)
+            
+            if not top_students:
+                print("No student statistics available.")
+                return
+                
+            print(f"TOP {len(top_students)} STUDENTS BY AVERAGE GRADE:")
+            print("-" * 100)
+            print(f"{'Rank':<5} {'ID':<5} {'Name':<20} {'Group':<8} {'Assignments':<12} {'Average':<10}")
+            print("-" * 100)
+            
+            for i, stat in enumerate(top_students, 1):
+                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
+                print(f"{i:<5} {stat.student_id:<5} {stat.student_name:<20} {stat.group:<8} {stat.graded_assignments:<12} {avg_str:<10}")
+                
+        except ValueError:
+            print("Error: Limit must be a valid number")
+        except Exception as e:
+            print(f"Error generating top students: {e}")
+
+    def _handle_top_groups(self, args):
+        """Handle top_groups command"""
+        try:
+            calc = self._get_statistics_calculator()
+            group_rankings = calc.get_group_rankings()
+            
+            if not group_rankings:
+                print("No group statistics available.")
+                return
+                
+            print("GROUPS RANKED BY AVERAGE GRADE:")
+            print("-" * 60)
+            print(f"{'Rank':<5} {'Group':<8} {'Average':<10} {'Students':<12}")
+            print("-" * 60)
+            
+            for i, (group, avg_grade, student_count) in enumerate(group_rankings, 1):
+                print(f"{i:<5} {group:<8} {avg_grade:<10.2f} {student_count:<12}")
+                
+        except Exception as e:
+            print(f"Error generating group rankings: {e}")
+
+    def _handle_difficult_problems(self, args):
+        """Handle difficult_problems command"""
+        try:
+            calc = self._get_statistics_calculator()
+            difficult_problems = calc.get_difficult_problems()
+            
+            if not difficult_problems:
+                print("No problem statistics available.")
+                return
+                
+            print("PROBLEMS RANKED BY DIFFICULTY (LOWEST AVERAGE GRADE):")
+            print("-" * 120)
+            print(f"{'Rank':<5} {'Problem ID':<12} {'Description':<30} {'Assignments':<12} {'Average':<10}")
+            print("-" * 120)
+            
+            for i, stat in enumerate(difficult_problems, 1):
+                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
+                print(f"{i:<5} {stat.problem_id:<12} {stat.description[:30]:<30} {stat.graded_assignments:<12} {avg_str:<10}")
+                
+        except Exception as e:
+            print(f"Error generating difficult problems: {e}")
+
+    def _handle_grade_distribution(self, args):
+        """Handle grade_distribution command"""
+        try:
+            calc = self._get_statistics_calculator()
+            distribution = calc.get_grade_distribution()
+            
+            total_grades = sum(distribution.values())
+            if total_grades == 0:
+                print("No graded assignments found.")
+                return
+                
+            print("GRADE DISTRIBUTION:")
+            print("-" * 40)
+            print(f"{'Grade Range':<12} {'Count':<8} {'Percentage':<12}")
+            print("-" * 40)
+            
+            for grade_range, count in distribution.items():
+                percentage = (count / total_grades) * 100 if total_grades > 0 else 0
+                print(f"{grade_range:<12} {count:<8} {percentage:<12.1f}%")
+            
+            print("-" * 40)
+            print(f"{'Total:':<12} {total_grades:<8} {'100.0%':<12}")
+                
+        except Exception as e:
+            print(f"Error generating grade distribution: {e}")
+
+    def _handle_failing_students(self, args):
+        """Handle failing_students command"""
+        try:
+            threshold = 5.0  # default
+            if args and len(args) > 0:
+                threshold = float(args[0])
+                
+            calc = self._get_statistics_calculator()
+            failing_students = calc.get_students_below_threshold(threshold)
+            
+            if not failing_students:
+                print(f"No students found with average grade below {threshold}")
+                return
+                
+            print(f"STUDENTS WITH AVERAGE GRADE BELOW {threshold}:")
+            print("-" * 100)
+            print(f"{'ID':<5} {'Name':<20} {'Group':<8} {'Assignments':<12} {'Average':<10}")
+            print("-" * 100)
+            
+            for stat in failing_students:
+                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
+                print(f"{stat.student_id:<5} {stat.student_name:<20} {stat.group:<8} {stat.graded_assignments:<12} {avg_str:<10}")
+                
+        except ValueError:
+            print("Error: Threshold must be a valid number")
+        except Exception as e:
+            print(f"Error generating failing students: {e}")
 
     def _handle_save_data(self, args):
         """Handle save_data command"""
