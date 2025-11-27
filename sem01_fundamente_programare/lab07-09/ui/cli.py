@@ -24,7 +24,7 @@ class CLI:
             sys.path.insert(0, parent_dir)
             
             from services.persistence_service import PersistenceService
-            self._persistence_service = PersistenceService()
+            self._persistence_service = PersistenceService("data")
             print("Persistence service initialized successfully.")
         except Exception as e:
             print(f"Warning: Could not initialize persistence service: {e}")
@@ -484,21 +484,21 @@ Other:
                 print("Not enough data for generating report.")
                 return
                 
-            print(f"TOP {k} STUDENTS vs TOP {k} PROBLEMS REPORT:")
-            print("=" * (20 + k * 15))
+            print(f"Top {k} students vs top {k} problems:")
+            print()
             
-            # Print header with problem IDs
-            header = f"{'Student':<20}"
+            # Simple header
+            header = "Student"
             for problem_stat in top_problems:
-                header += f"{problem_stat.get_problem_id():<15}"
+                header += f"  {problem_stat.get_problem_id()}"
             print(header)
-            print("-" * (20 + k * 15))
+            print("=" * len(header))
             
-            # Generate and print matrix data
+            # Simple data rows
             for student_stat in top_students:
                 student_id = student_stat.get_student_id()
                 student_name = student_stat.get_student_name()
-                line = f"{student_name[:19]:<20}"
+                line = f"{student_name}"
                 
                 for problem_stat in top_problems:
                     problem_id = problem_stat.get_problem_id()
@@ -511,28 +511,28 @@ Other:
                             break
                     
                     if assignment is None:
-                        cell = "Not assigned"
+                        cell = "  -"
                     elif assignment.has_grade():
                         grade = assignment.get_grade()
-                        cell = f"{grade:.1f}"
+                        cell = f"  {grade:.1f}"
                     else:
-                        cell = "Ungraded"
+                        cell = "  ungraded"
                     
-                    line += f"{cell:<15}"
+                    line += cell
                 print(line)
             
-            # Print summary statistics
-            print("\n" + "=" * 60)
-            print("SUMMARY:")
+            # Print simple summary 
+            print()
             print(f"Top {k} Students (by average grade):")
-            for i, student in enumerate(top_students, 1):
+            for student in top_students:
                 avg_grade = student.get_average_grade()
                 avg_str = f"{avg_grade:.2f}" if avg_grade is not None else "N/A"
-                print(f"  {i}. {student.get_student_name()} (Group {student.get_group()}) - {avg_str}")
-                
-            print(f"\nTop {k} Problems (by number of assignments):")
-            for i, problem in enumerate(top_problems, 1):
-                print(f"  {i}. {problem.get_problem_id()}: {problem.get_description()[:40]} - {problem.get_total_assignments()} assignments")
+                print(f"{student.get_student_name()} (Group {student.get_group()}) - {avg_str}")
+            
+            print()    
+            print(f"Top {k} Problems (by number of assignments):")
+            for problem in top_problems:
+                print(f"{problem.get_problem_id()}: {problem.get_description()} - {problem.get_total_assignments()} assignments")
                 
         except ValueError:
             print("Error: k must be a valid number")
