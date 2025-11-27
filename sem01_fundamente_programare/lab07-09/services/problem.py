@@ -1,6 +1,8 @@
 from repos.problem import ProblemRepository
 from domain.problem import Problem
 from datetime import date
+from domain.assignment import Assignment
+
 
 
 class ProblemService:
@@ -39,6 +41,29 @@ class ProblemService:
         """Search for problems by id in format 'lab_problem' (e.g., '7_1')"""
         results = self._problem_repo.search_problems_by_id(lab_problem_id)
         return results
+
+    def get_top_problems(self, assignments: list, limit: int = 10) -> list[dict]:
+        """Get top problems by number of assignments (popularity)"""
+        
+        problems = self._problem_repo.list_problems()
+        problem_stats = []
+        
+        for problem in problems:
+            problem_id = f"{problem.get_lab_number()}_{problem.get_problem_number()}"
+            problem_assignments = [a for a in assignments if a.get_problem_id() == problem_id]
+            
+            problem_stats.append({
+                'problem_id': problem_id,
+                'lab_number': problem.get_lab_number(),
+                'problem_number': problem.get_problem_number(),
+                'description': problem.get_description(),
+                'total_assignments': len(problem_assignments),
+                'graded_assignments': len([a for a in problem_assignments if a.has_grade()])
+            })
+        
+        # Sort by total assignments descending (popularity)
+        problem_stats.sort(key=lambda x: x['total_assignments'], reverse=True)
+        return problem_stats[:limit]
 
 
 def test_module():

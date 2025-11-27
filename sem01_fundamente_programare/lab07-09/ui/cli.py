@@ -5,7 +5,9 @@ from services.problem import ProblemService
 from services.student import StudentService
 from services.assignment import AssignmentService
 from services.persistence_service import PersistenceService
-from stats.statistics_calculator import StatisticsCalculator, ReportExporter
+from repos.student import StudentRepository
+from repos.problem import ProblemRepository
+from repos.assignment import AssignmentRepository
 
 class CLI:
     def __init__(self):
@@ -16,7 +18,6 @@ class CLI:
         # Initialize persistence service
         self._persistence_service = None
         try:
-            # Import here to avoid initial import errors
             import sys
             current_dir = os.path.dirname(os.path.abspath(__file__))
             parent_dir = os.path.dirname(current_dir)
@@ -35,47 +36,29 @@ class CLI:
         self.running = True
 
         self.commands = {
+            # Basic CRUD operations
             "add_student": self._handle_add_student,
-            "remove_student": self._handle_remove_student,
             "list_students": self._handle_list_students,
-            "search_student": self._handle_search_student,
             "add_problem": self._handle_add_problem,
-            "remove_problem": self._handle_remove_problem,
             "list_problems": self._handle_list_problems,
-            "search_problem": self._handle_search_problem,
-            
-            # Assignment operations
             "create_assignment": self._handle_create_assignment,
             "grade_assignment": self._handle_grade_assignment,
             "list_assignments": self._handle_list_assignments,
-
-            # Statistics and reporting
-            "stats_students": self._handle_stats_students,
-            "stats_problems": self._handle_stats_problems,
-            "report_group": self._handle_report_group,
-            "export_grades": self._handle_export_grades,
-            "top_students": self._handle_top_students,
-            "top_groups": self._handle_top_groups,
-            "difficult_problems": self._handle_difficult_problems,
-            "grade_distribution": self._handle_grade_distribution,
-            "failing_students": self._handle_failing_students,
+            
+            # Reports
             "raport": self._handle_raport,
-
+            
             # Data persistence
             "save_data": self._handle_save_data,
             "load_data": self._handle_load_data,
-            "export_data": self._handle_export_data,
-
+            
             # Helpers
             'help': self._handle_help,
             'exit': self._handle_exit,
-            'quit': self._handle_exit,
             'clear': self._handle_clear,
         }
 
-
     def run(self):
-
         while self.running:
             try:
                 user_input = input("StudentAssignmentsCLI >>> ").strip()
@@ -88,8 +71,7 @@ class CLI:
                 print("\nSee you later!")
                 break
 
-
-    def _process_command(self, user_input:str):
+    def _process_command(self, user_input: str):
         """Process a single command"""
         try:
             # Parse command and arguments
@@ -116,59 +98,36 @@ class CLI:
         print("""
 AVAILABLE COMMANDS:
 
-Student related operations:
-  add_student <name> <group>                - Add a new student in the database
-  remove_student <student_id>               - Remove a student by ID
-  list_students                             - List all students
-  search_student <search_type> <search_term> - Search students by name, id, or group
-                                              Examples: search_student name "John"
-                                                       search_student id 123
-                                                       search_student group 917
+Students:
+  add_student <name> <group>        - Add a new student
+  list_students                     - List all students
 
-Problem related operations:
-  add_problem <lab_problem> <description> <deadline>    - Add a new problem
-                                                        Format: lab_problem as '7_1', deadline as 'YYYY-MM-DD'
-  remove_problem <lab_problem>                          - Remove a problem by lab_problem format
-  list_problems                                         - List all problems
-  search_problem <lab_problem_id>                       - Search problem by ID (format: '7_1')
+Problems:
+  add_problem <lab_problem> <description> <deadline>  - Add a new problem
+                                                      Format: lab_problem as '7_1', deadline as 'YYYY-MM-DD'
+  list_problems                     - List all problems
 
-Assignment operations:
-  create_assignment <student_id> <problem_id>           - Assign a problem to a student
-                                                        Format: problem_id as '7_1'
-  grade_assignment <assignment_id> <grade>              - Grade an assignment (0-10)
-  list_assignments                                      - List all assignments
+Assignments:
+  create_assignment <student_id> <problem_id>  - Assign a problem to a student
+  grade_assignment <assignment_id> <grade>     - Grade an assignment (0-10)
+  list_assignments                             - List all assignments
 
-Statistics and reporting:
-  stats_students                                        - Show detailed student statistics
-  stats_problems                                        - Show detailed problem statistics
-  report_group <group_number>                           - Generate detailed report for a group
-  export_grades <filepath>                              - Export all grades to CSV file
-  top_students [limit]                                  - Show top students by average grade (default: 10)
-  top_groups                                            - Show groups ranked by average grade
-  difficult_problems                                    - Show problems ranked by difficulty (lowest grades)
-  grade_distribution                                    - Show grade distribution statistics
-  failing_students [threshold]                          - Show students below grade threshold (default: 5.0)
-  raport [k]                                            - Generate k*k matrix report with top k students and problems (default: 3)
+Reports:
+  raport [k]                        - Generate k*k matrix report (default: 3)
 
-Data persistence:
-  save_data                                             - Save all data to CSV files
-  load_data                                             - Load data from CSV files  
-  export_data <directory>                               - Export data to directory
+Data:
+  save_data                         - Save all data to CSV files
+  load_data                         - Load data from CSV files
 
-Random generation:
-  generate_student                                      - Generate and add a random student
-  generate_problem                                      - Generate and add a random problem
-
-Others:
-  clear                                   - Clear the screen
-  help                                    - Show this message
-  exit, quit                              - Exit the application
-""")  
+Other:
+  help                              - Show this message
+  clear                             - Clear screen
+  exit                              - Exit application
+""")
 
     def _handle_clear(self, args):
         """Handle clear command"""
         os.system('cls' if os.name == 'nt' else 'clear')
-
 
     def _handle_exit(self, args):
         """Handle exit command"""
@@ -191,84 +150,51 @@ Others:
         except Exception as e:
             print(f"Unexpected error: {e}")
 
-    def _handle_remove_student(self, args):
-        """Handle remove_student command"""
-        if len(args) != 1:
-            print("Usage: remove_student <student_id>")
-            return
-        
-        try:
-            student_id = int(args[0])
-            self._student_service.remove_student(student_id)
-            print(f"Student with ID {student_id} removed successfully")
-        except ValueError as e:
-            print(f"Error: {e}")
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-
     def _handle_list_students(self, args):
         """Handle list_students command"""
-        students = self._student_service.list_students()
-        
-        if not students:
-            print("No students found.")
-            return
-        
-        print("STUDENTS:")
-        print("-" * 50)
-        print(f"{'ID':<5} {'Name':<20} {'Group':<10}")
-        print("-" * 50)
-        
-        for student in students:
-            print(f"{student.get_id():<5} {student.get_name():<20} {student.get_group():<10}")
+        try:
+            students = self._student_service.list_students()
+            if not students:
+                print("No students found.")
+                return
+            
+            print("STUDENTS:")
+            print("-" * 50)
+            print(f"{'ID':<5} {'Name':<20} {'Group':<8}")
+            print("-" * 50)
+            for student in students:
+                print(f"{student.get_id():<5} {student.get_name():<20} {student.get_group():<8}")
+                
+        except Exception as e:
+            print(f"Error listing students: {e}")
 
     def _handle_add_problem(self, args):
         """Handle add_problem command"""
-        if len(args) < 3:
-            print("Usage: add_problem <lab_problem> <description> <deadline_YYYY-MM-DD>")
+        if len(args) != 3:
+            print("Usage: add_problem <lab_problem> <description> <deadline>")
             print("Example: add_problem 7_1 'Sort array problem' 2024-12-15")
             return
         
         try:
             lab_problem = args[0]
-            if '_' not in lab_problem:
-                print("Error: lab_problem must be in format <labnumber>_<problemnumber>")
-                return
-            
-            lab_number, problem_number = lab_problem.split('_', 1)
-            lab_number = int(lab_number)
-            problem_number = int(problem_number)
-            
             description = args[1]
             deadline_str = args[2]
-            deadline = datetime.strptime(deadline_str, '%Y-%m-%d').date()
             
-            problem = self._problem_service.add_problem(lab_number, problem_number, description, deadline)
-            print(f"Problem added successfully: Lab {lab_number}, Problem {problem_number}, Deadline: {deadline}")
-        except ValueError as e:
-            print(f"Error: {e}")
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-
-    def _handle_remove_problem(self, args):
-        """Handle remove_problem command"""
-        if len(args) != 1:
-            print("Usage: remove_problem <lab_problem>")
-            print("Example: remove_problem 7_1")
-            return
-        
-        try:
-            lab_problem = args[0]
-            if '_' not in lab_problem:
-                print("Error: lab_problem must be in format <labnumber>_<problemnumber>")
+            # Parse lab_problem format (e.g., "7_1")
+            parts = lab_problem.split('_')
+            if len(parts) != 2:
+                print("Lab problem format should be 'lab_problem' (e.g., '7_1')")
                 return
             
-            lab_number, problem_number = lab_problem.split('_', 1)
-            lab_number = int(lab_number)
-            problem_number = int(problem_number)
+            lab_number = int(parts[0])
+            problem_number = int(parts[1])
             
-            self._problem_service.remove_problem(lab_number, problem_number)
-            print(f"Problem {lab_number}_{problem_number} removed successfully")
+            # Parse deadline
+            deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+            
+            problem = self._problem_service.add_problem(lab_number, problem_number, description, deadline)
+            print(f"Problem added successfully: {lab_number}_{problem_number} - {description}")
+            
         except ValueError as e:
             print(f"Error: {e}")
         except Exception as e:
@@ -276,87 +202,22 @@ Others:
 
     def _handle_list_problems(self, args):
         """Handle list_problems command"""
-        problems = self._problem_service.list_problems()
-        
-        if not problems:
-            print("No problems found.")
-            return
-        
-        print("PROBLEMS:")
-        print("-" * 80)
-        print(f"{'Lab':<5} {'Problem':<8} {'Description':<30} {'Deadline':<15}")
-        print("-" * 80)
-        
-        for problem in problems:
-            print(f"{problem.get_lab_number():<5} {problem.get_problem_number():<8} {problem.get_description():<30} {problem.get_deadline():<15}")
-
-    def _handle_search_student(self, args):
-        """Handle search_student command"""
-        if len(args) != 2:
-            print("Usage: search_student <search_type> <search_term>")
-            print("Search types: name, id, group")
-            print("Examples:")
-            print("  search_student name John")
-            print("  search_student id 123")
-            print("  search_student group 917")
-            return
-        
         try:
-            search_type = args[0].lower()
-            search_term = args[1]
-            
-            if search_type not in ['name', 'id', 'group']:
-                print("Error: search_type must be 'name', 'id', or 'group'")
+            problems = self._problem_service.list_problems()
+            if not problems:
+                print("No problems found.")
                 return
             
-            results = self._student_service.search_students(search_term, search_type)
-            
-            if not results:
-                print(f"No students found with {search_type} '{search_term}'")
-                return
-            
-            print(f"STUDENTS MATCHING {search_type.upper()}: '{search_term}'")
-            print("-" * 50)
-            print(f"{'ID':<5} {'Name':<20} {'Group':<10}")
-            print("-" * 50)
-            
-            for student in results:
-                print(f"{student.get_id():<5} {student.get_name():<20} {student.get_group():<10}")
-                
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-
-    def _handle_search_problem(self, args):
-        """Handle search_problem command"""
-        if len(args) != 1:
-            print("Usage: search_problem <lab_problem_id>")
-            print("Format: lab_problem_id as 'lab_problem' (e.g., '7_1')")
-            print("Example: search_problem 7_1")
-            return
-        
-        try:
-            lab_problem_id = args[0]
-            
-            if '_' not in lab_problem_id:
-                print("Error: lab_problem_id must be in format <labnumber>_<problemnumber>")
-                return
-            
-            results = self._problem_service.search_problems_by_id(lab_problem_id)
-            
-            if not results:
-                print(f"No problem found with ID '{lab_problem_id}'")
-                return
-            
-            print(f"PROBLEM MATCHING ID: '{lab_problem_id}'")
+            print("PROBLEMS:")
             print("-" * 80)
             print(f"{'Lab':<5} {'Problem':<8} {'Description':<30} {'Deadline':<15}")
             print("-" * 80)
-            
-            for problem in results:
-                print(f"{problem.get_lab_number():<5} {problem.get_problem_number():<8} {problem.get_description():<30} {problem.get_deadline():<15}")
+            for problem in problems:
+                deadline_str = problem.get_deadline().strftime("%Y-%m-%d") if problem.get_deadline() else "N/A"
+                print(f"{problem.get_lab_number():<5} {problem.get_problem_number():<8} {problem.get_description():<30} {deadline_str:<15}")
                 
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            print(f"Error listing problems: {e}")
 
     def _handle_create_assignment(self, args):
         """Handle create_assignment command"""
@@ -369,15 +230,9 @@ Others:
             student_id = int(args[0])
             problem_id = args[1]
             
-            if '_' not in problem_id:
-                print("Error: problem_id must be in format <labnumber>_<problemnumber>")
-                return
+            assignment = self._assignment_service.assign_problem(student_id, problem_id)
+            print(f"Assignment created successfully: ID {assignment.get_assignment_id()}")
             
-            assignment = self._assignment_service.create_assignment(student_id, problem_id)
-            student_name = self._assignment_service.get_student_name(student_id)
-            problem_desc = self._assignment_service.get_problem_description(problem_id)
-            
-            print(f"Assignment created: Student {student_name} (ID: {student_id}) assigned to Problem {problem_id} ({problem_desc})")
         except ValueError as e:
             print(f"Error: {e}")
         except Exception as e:
@@ -387,25 +242,20 @@ Others:
         """Handle grade_assignment command"""
         if len(args) != 2:
             print("Usage: grade_assignment <assignment_id> <grade>")
-            print("Example: grade_assignment 1 9.5")
-            print("Grade must be between 0 and 10")
+            print("Grade should be between 0 and 10")
             return
         
         try:
             assignment_id = int(args[0])
             grade = float(args[1])
             
-            # Get assignment info for confirmation message
-            assignment = self._assignment_service.get_assignment_by_id(assignment_id)
-            if assignment is None:
-                print(f"Error: Assignment with ID {assignment_id} not found")
+            if not (0 <= grade <= 10):
+                print("Grade must be between 0 and 10")
                 return
             
-            student_name = self._assignment_service.get_student_name(assignment.get_student_id())
-            problem_desc = self._assignment_service.get_problem_description(assignment.get_problem_id())
-            
             self._assignment_service.grade_assignment(assignment_id, grade)
-            print(f"Assignment graded: Student {student_name} - Problem {assignment.get_problem_id()} ({problem_desc}) - Grade: {grade}")
+            print(f"Assignment {assignment_id} graded successfully with grade {grade}")
+            
         except ValueError as e:
             print(f"Error: {e}")
         except Exception as e:
@@ -413,289 +263,53 @@ Others:
 
     def _handle_list_assignments(self, args):
         """Handle list_assignments command"""
-        assignments = self._assignment_service.list_assignments()
-        
-        if not assignments:
-            print("No assignments found.")
-            return
-        
-        print("ASSIGNMENTS:")
-        print("-" * 90)
-        print(f"{'ID':<5} {'Student':<20} {'Problem':<10} {'Description':<25} {'Grade':<10}")
-        print("-" * 90)
-        
-        for assignment in assignments:
-            student_name = self._assignment_service.get_student_name(assignment.get_student_id())
-            problem_desc = self._assignment_service.get_problem_description(assignment.get_problem_id())
-            grade_str = str(assignment.get_grade()) if assignment.has_grade() else "Not graded"
-            
-            print(f"{assignment.get_assignment_id():<5} {student_name:<20} {assignment.get_problem_id():<10} {problem_desc[:25]:<25} {grade_str:<10}")
-
-    def _get_statistics_calculator(self):
-        """Get a statistics calculator instance with current data"""
-        import sys
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(current_dir)
-        sys.path.insert(0, parent_dir)
-        
-        from stats.statistics_calculator import StatisticsCalculator
-        
-        students = self._student_service.list_students()
-        problems = self._problem_service.list_problems()
-        assignments = self._assignment_service.list_assignments()
-        
-        return StatisticsCalculator(students, problems, assignments)
-
-    def _handle_stats_students(self, args):
-        """Handle stats_students command"""
         try:
-            calc = self._get_statistics_calculator()
-            stats = calc.calculate_student_statistics()
-            
-            if not stats:
-                print("No student statistics available.")
-                return
-            
-            print("STUDENT STATISTICS:")
-            print("-" * 100)
-            print(f"{'ID':<5} {'Name':<20} {'Group':<8} {'Total':<8} {'Graded':<8} {'Average':<10}")
-            print("-" * 100)
-            
-            for stat in stats:
-                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
-                print(f"{stat.student_id:<5} {stat.student_name:<20} {stat.group:<8} {stat.total_assignments:<8} {stat.graded_assignments:<8} {avg_str:<10}")
-                
-        except Exception as e:
-            print(f"Error generating student statistics: {e}")
-
-    def _handle_stats_problems(self, args):
-        """Handle stats_problems command"""
-        try:
-            calc = self._get_statistics_calculator()
-            stats = calc.calculate_problem_statistics()
-            
-            if not stats:
-                print("No problem statistics available.")
-                return
-            
-            print("PROBLEM STATISTICS:")
-            print("-" * 120)
-            print(f"{'Problem ID':<12} {'Description':<30} {'Total':<8} {'Graded':<8} {'Completion %':<12} {'Average':<10}")
-            print("-" * 120)
-            
-            for stat in stats:
-                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
-                print(f"{stat.problem_id:<12} {stat.description[:30]:<30} {stat.total_assignments:<8} {stat.graded_assignments:<8} {stat.completion_rate:<12.1f} {avg_str:<10}")
-                
-        except Exception as e:
-            print(f"Error generating problem statistics: {e}")
-
-    def _handle_report_group(self, args):
-        """Handle report_group command"""
-        if len(args) != 1:
-            print("Usage: report_group <group_number>")
-            print("Example: report_group 917")
-            return
-        
-        try:
-            group_number = int(args[0])
-            calc = self._get_statistics_calculator()
-            report = calc.generate_group_report(group_number)
-            
-            if report.total_students == 0:
-                print(f"No students found in group {group_number}")
-                return
-            
-            print(f"GROUP {group_number} REPORT:")
-            print("-" * 60)
-            print(f"Total Students:              {report.total_students}")
-            print(f"Students with Assignments:   {report.students_with_assignments}")
-            print(f"Total Assignments:           {report.total_assignments}")
-            print(f"Graded Assignments:          {report.graded_assignments}")
-            
-            if report.group_average_grade is not None:
-                print(f"Group Average Grade:         {report.group_average_grade:.2f}")
-            else:
-                print(f"Group Average Grade:         N/A")
-            
-            if report.best_student:
-                print(f"Best Student:                {report.best_student[0]} ({report.best_student[1]:.2f})")
-            else:
-                print(f"Best Student:                N/A")
-                
-            if report.lowest_student:
-                print(f"Lowest Student:              {report.lowest_student[0]} ({report.lowest_student[1]:.2f})")
-            else:
-                print(f"Lowest Student:              N/A")
-                
-        except ValueError:
-            print("Error: Group number must be a valid integer")
-        except Exception as e:
-            print(f"Error generating group report: {e}")
-
-    def _handle_export_grades(self, args):
-        """Handle export_grades command"""
-        if len(args) != 1:
-            print("Usage: export_grades <filepath>")
-            print("Example: export_grades /path/to/grades.csv")
-            return
-        
-        try:
-            filepath = args[0]
-            
-            # Import ReportExporter
-            import sys
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            parent_dir = os.path.dirname(current_dir)
-            sys.path.insert(0, parent_dir)
-            
-            from stats.statistics_calculator import ReportExporter
-            
-            students = self._student_service.list_students()
             assignments = self._assignment_service.list_assignments()
-            
-            ReportExporter.export_all_grades(students, assignments, filepath)
-            print(f"Grades exported successfully to: {filepath}")
-            
-        except Exception as e:
-            print(f"Error exporting grades: {e}")
-
-    def _handle_top_students(self, args):
-        """Handle top_students command"""
-        try:
-            limit = 10  # default
-            if args and len(args) > 0:
-                limit = int(args[0])
-                
-            calc = self._get_statistics_calculator()
-            top_students = calc.get_top_students(limit)
-            
-            if not top_students:
-                print("No student statistics available.")
+            if not assignments:
+                print("No assignments found.")
                 return
-                
-            print(f"TOP {len(top_students)} STUDENTS BY AVERAGE GRADE:")
-            print("-" * 100)
-            print(f"{'Rank':<5} {'ID':<5} {'Name':<20} {'Group':<8} {'Assignments':<12} {'Average':<10}")
-            print("-" * 100)
             
-            for i, stat in enumerate(top_students, 1):
-                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
-                print(f"{i:<5} {stat.student_id:<5} {stat.student_name:<20} {stat.group:<8} {stat.graded_assignments:<12} {avg_str:<10}")
-                
-        except ValueError:
-            print("Error: Limit must be a valid number")
-        except Exception as e:
-            print(f"Error generating top students: {e}")
-
-    def _handle_top_groups(self, args):
-        """Handle top_groups command"""
-        try:
-            calc = self._get_statistics_calculator()
-            group_rankings = calc.get_group_rankings()
+            print("ASSIGNMENTS:")
+            print("-" * 90)
+            print(f"{'ID':<5} {'Student':<20} {'Problem':<10} {'Description':<25} {'Grade':<10}")
+            print("-" * 90)
             
-            if not group_rankings:
-                print("No group statistics available.")
-                return
+            for assignment in assignments:
+                # Get student name
+                try:
+                    student = self._student_service._student_repo.find_student_by_id(assignment.get_student_id())
+                    student_name = student.get_name() if student else f"ID {assignment.get_student_id()}"
+                except:
+                    student_name = f"ID {assignment.get_student_id()}"
                 
-            print("GROUPS RANKED BY AVERAGE GRADE:")
-            print("-" * 60)
-            print(f"{'Rank':<5} {'Group':<8} {'Average':<10} {'Students':<12}")
-            print("-" * 60)
-            
-            for i, (group, avg_grade, student_count) in enumerate(group_rankings, 1):
-                print(f"{i:<5} {group:<8} {avg_grade:<10.2f} {student_count:<12}")
+                # Get problem description
+                try:
+                    problem_id = assignment.get_problem_id()
+                    parts = problem_id.split('_')
+                    lab_num, prob_num = int(parts[0]), int(parts[1])
+                    problem = self._problem_service._problem_repo.find_problem(lab_num, prob_num)
+                    description = problem.get_description()[:24] if problem else "Unknown"
+                except:
+                    description = "Unknown"
+                
+                grade_str = f"{assignment.get_grade()}" if assignment.has_grade() else "Not graded"
+                
+                print(f"{assignment.get_assignment_id():<5} {student_name:<20} {assignment.get_problem_id():<10} {description:<25} {grade_str:<10}")
                 
         except Exception as e:
-            print(f"Error generating group rankings: {e}")
-
-    def _handle_difficult_problems(self, args):
-        """Handle difficult_problems command"""
-        try:
-            calc = self._get_statistics_calculator()
-            difficult_problems = calc.get_difficult_problems()
-            
-            if not difficult_problems:
-                print("No problem statistics available.")
-                return
-                
-            print("PROBLEMS RANKED BY DIFFICULTY (LOWEST AVERAGE GRADE):")
-            print("-" * 120)
-            print(f"{'Rank':<5} {'Problem ID':<12} {'Description':<30} {'Assignments':<12} {'Average':<10}")
-            print("-" * 120)
-            
-            for i, stat in enumerate(difficult_problems, 1):
-                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
-                print(f"{i:<5} {stat.problem_id:<12} {stat.description[:30]:<30} {stat.graded_assignments:<12} {avg_str:<10}")
-                
-        except Exception as e:
-            print(f"Error generating difficult problems: {e}")
-
-    def _handle_grade_distribution(self, args):
-        """Handle grade_distribution command"""
-        try:
-            calc = self._get_statistics_calculator()
-            distribution = calc.get_grade_distribution()
-            
-            total_grades = sum(distribution.values())
-            if total_grades == 0:
-                print("No graded assignments found.")
-                return
-                
-            print("GRADE DISTRIBUTION:")
-            print("-" * 40)
-            print(f"{'Grade Range':<12} {'Count':<8} {'Percentage':<12}")
-            print("-" * 40)
-            
-            for grade_range, count in distribution.items():
-                percentage = (count / total_grades) * 100 if total_grades > 0 else 0
-                print(f"{grade_range:<12} {count:<8} {percentage:<12.1f}%")
-            
-            print("-" * 40)
-            print(f"{'Total:':<12} {total_grades:<8} {'100.0%':<12}")
-                
-        except Exception as e:
-            print(f"Error generating grade distribution: {e}")
-
-    def _handle_failing_students(self, args):
-        """Handle failing_students command"""
-        try:
-            threshold = 5.0  # default
-            if args and len(args) > 0:
-                threshold = float(args[0])
-                
-            calc = self._get_statistics_calculator()
-            failing_students = calc.get_students_below_threshold(threshold)
-            
-            if not failing_students:
-                print(f"No students found with average grade below {threshold}")
-                return
-                
-            print(f"STUDENTS WITH AVERAGE GRADE BELOW {threshold}:")
-            print("-" * 100)
-            print(f"{'ID':<5} {'Name':<20} {'Group':<8} {'Assignments':<12} {'Average':<10}")
-            print("-" * 100)
-            
-            for stat in failing_students:
-                avg_str = f"{stat.average_grade:.2f}" if stat.average_grade is not None else "N/A"
-                print(f"{stat.student_id:<5} {stat.student_name:<20} {stat.group:<8} {stat.graded_assignments:<12} {avg_str:<10}")
-                
-        except ValueError:
-            print("Error: Threshold must be a valid number")
-        except Exception as e:
-            print(f"Error generating failing students: {e}")
+            print(f"Error listing assignments: {e}")
 
     def _handle_raport(self, args):
-        """Handle raport command - generates k*k matrix report"""
         try:
             k = 3  # default
             if args and len(args) > 0:
                 k = int(args[0])
-                
-            calc = self._get_statistics_calculator()
-            report = calc.generate_top_report(k)
             
-            if not report['top_students'] or not report['top_problems']:
+            assignments = self._assignment_service.list_assignments()
+            top_students = self._student_service.get_top_students(assignments, k)
+            top_problems = self._problem_service.get_top_problems(assignments, k)
+            
+            if not top_students or not top_problems:
                 print("Not enough data for generating report.")
                 return
                 
@@ -704,31 +318,50 @@ Others:
             
             # Print header with problem IDs
             header = f"{'Student':<20}"
-            for problem_stat in report['top_problems']:
-                header += f"{problem_stat.problem_id:<15}"
+            for problem_stat in top_problems:
+                header += f"{problem_stat['problem_id']:<15}"
             print(header)
             print("-" * (20 + k * 15))
             
-            # Print matrix data
-            for student_row in report['matrix_data']:
-                line = f"{student_row['student_name'][:19]:<20}"
-                for problem_stat in report['top_problems']:
-                    problem_id = problem_stat.problem_id
-                    problem_data = student_row['problem_data'][problem_id]
+            # Generate and print matrix data
+            for student_stat in top_students:
+                student_id = student_stat['student_id']
+                student_name = student_stat['student_name']
+                line = f"{student_name[:19]:<20}"
+                
+                for problem_stat in top_problems:
+                    problem_id = problem_stat['problem_id']
                     
-                    if problem_data['status'] == "Not assigned":
+                    # Find assignment for this student and problem
+                    assignment = None
+                    for a in assignments:
+                        if a.get_student_id() == student_id and a.get_problem_id() == problem_id:
+                            assignment = a
+                            break
+                    
+                    if assignment is None:
                         cell = "Not assigned"
-                    elif problem_data['status'] == "Assigned":
-                        cell = "Ungraded"
+                    elif assignment.has_grade():
+                        grade = assignment.get_grade()
+                        cell = f"{grade:.1f}"
                     else:
-                        grade = problem_data['grade']
-                        if isinstance(grade, (int, float)):
-                            cell = f"{grade:.1f}"
-                        else:
-                            cell = str(grade)
+                        cell = "Ungraded"
                     
                     line += f"{cell:<15}"
-                print(line)       
+                print(line)
+            
+            # Print summary statistics
+            print("\n" + "=" * 60)
+            print("SUMMARY:")
+            print(f"Top {k} Students (by average grade):")
+            for i, student in enumerate(top_students, 1):
+                avg_str = f"{student['average_grade']:.2f}" if student['average_grade'] is not None else "N/A"
+                print(f"  {i}. {student['student_name']} (Group {student['group']}) - {avg_str}")
+                
+            print(f"\nTop {k} Problems (by number of assignments):")
+            for i, problem in enumerate(top_problems, 1):
+                print(f"  {i}. {problem['problem_id']}: {problem['description'][:40]} - {problem['total_assignments']} assignments")
+                
         except ValueError:
             print("Error: k must be a valid number")
         except Exception as e:
@@ -758,46 +391,16 @@ Others:
         try:
             students, problems, assignments = self._persistence_service.load_application_data()
             
-            # Clear and repopulate repositories with loaded data
-            self._load_data_into_repositories(students, problems, assignments)
+            # Clear current data and load new data
+            self._student_service._student_repo = StudentRepository(students)
+            self._problem_service._problem_repo = ProblemRepository(problems)
+            self._assignment_service._assignment_repo = AssignmentRepository(assignments)
             
-            print(f"Loaded {len(students)} students, {len(problems)} problems, {len(assignments)} assignments")
-            print("Data successfully loaded into application repositories.")
+            # Update shared repositories
+            self._assignment_service.set_student_repo(self._student_service._student_repo)
+            self._assignment_service.set_problem_repo(self._problem_service._problem_repo)
+            
+            print(f"Data loaded successfully: {len(students)} students, {len(problems)} problems, {len(assignments)} assignments")
+            
         except Exception as e:
             print(f"Error loading data: {e}")
-    
-    def _load_data_into_repositories(self, students, problems, assignments):
-        """Load data into the CLI repositories, replacing existing data"""
-        from repos.student import StudentRepository
-        from repos.problem import ProblemRepository
-        from repos.assignment import AssignmentRepository
-        
-        # Replace student repository
-        self._student_service._student_repo = StudentRepository(students)
-        
-        # Replace problem repository  
-        self._problem_service._problem_repo = ProblemRepository(problems)
-        
-        # Replace assignment repository
-        self._assignment_service._assignment_repo = AssignmentRepository(assignments)
-        
-        # Update shared repositories to maintain consistency
-        self._assignment_service.set_student_repo(self._student_service._student_repo)
-        self._assignment_service.set_problem_repo(self._problem_service._problem_repo)
-
-    def _handle_export_data(self, args):
-        """Handle export_data command"""
-        if len(args) != 1:
-            print("Usage: export_data <directory>")
-            print("Example: export_data /path/to/export")
-            return
-        
-        if self._persistence_service is None:
-            print("Error: Persistence service not available")
-            return
-        
-        try:
-            export_dir = args[0]
-            self._persistence_service.export_data(export_dir)
-        except Exception as e:
-            print(f"Error exporting data: {e}")

@@ -13,7 +13,7 @@ class AssignmentService:
         self._student_repo = StudentRepository([])
         self._problem_repo = ProblemRepository([])
 
-    def create_assignment(self, student_id: int, problem_id: str) -> Assignment:
+    def assign_problem(self, student_id: int, problem_id: str) -> Assignment:
         """Create a new assignment for a student and problem.
         
         Validates that:

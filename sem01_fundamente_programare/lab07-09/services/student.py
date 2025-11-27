@@ -1,6 +1,8 @@
 import random
 from repos.student import StudentRepository
 from domain.student import Student
+from domain.assignment import Assignment
+
 
 
 class StudentService:
@@ -47,6 +49,30 @@ class StudentService:
         """Search for students by name, id, or group"""
         results = self._student_repo.search_students(search_term, search_type)
         return results
+
+    def get_top_students(self, assignments: list, limit: int = 10) -> list[dict]:
+        """Get top students by average grade"""        
+        students = self._student_repo.get_all_students()
+        student_stats = []
+        
+        for student in students:
+            student_assignments = [a for a in assignments if a.get_student_id() == student.get_id()]
+            graded_assignments = [a for a in student_assignments if a.has_grade()]
+            
+            if graded_assignments:
+                avg_grade = sum(a.get_grade() for a in graded_assignments) / len(graded_assignments)
+                student_stats.append({
+                    'student_id': student.get_id(),
+                    'student_name': student.get_name(),
+                    'group': student.get_group(),
+                    'average_grade': avg_grade,
+                    'total_assignments': len(student_assignments),
+                    'graded_assignments': len(graded_assignments)
+                })
+        
+        # Sort by average grade descending
+        student_stats.sort(key=lambda x: x['average_grade'], reverse=True)
+        return student_stats[:limit]
 
 
 def test_module():

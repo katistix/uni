@@ -59,6 +59,14 @@ class ProblemRepository:
         
         return results
 
+    def find_problem(self, lab_number: int, problem_number: int) -> Problem | None:
+        """Find a problem by lab and problem number. Returns the problem or None if not found."""
+        for problem in self._problem_list:
+            if (problem.get_lab_number() == lab_number and 
+                problem.get_problem_number() == problem_number):
+                return problem
+        return None
+
 
 def test_module():
     repo = ProblemRepository([])

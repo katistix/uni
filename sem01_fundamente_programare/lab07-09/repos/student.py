@@ -68,6 +68,13 @@ class StudentRepository:
         
         return results
 
+    def find_student_by_id(self, student_id: int) -> Student | None:
+        """Find a student by ID. Returns the student or None if not found."""
+        for student in self._student_list:
+            if student.get_id() == student_id:
+                return student
+        return None
+
 
 def test_module():
     repo = StudentRepository([])
