@@ -8,6 +8,7 @@ from services.persistence_service import PersistenceService
 from repos.student import StudentRepository
 from repos.problem import ProblemRepository
 from repos.assignment import AssignmentRepository
+from stats.statistics_calculator import StatisticsCalculator, ReportExporter
 
 class CLI:
     def __init__(self):
@@ -59,6 +60,13 @@ class CLI:
             # Data persistence
             "save_data": self._handle_save_data,
             "load_data": self._handle_load_data,
+            "export_data": self._handle_export_data,
+            
+            # Statistics
+            "stats_students": self._handle_stats_students,
+            "stats_problems": self._handle_stats_problems,
+            "report_group": self._handle_report_group,
+            "export_grades": self._handle_export_grades,
             
             # Helpers
             'help': self._handle_help,
@@ -401,7 +409,7 @@ Other:
             student_id = int(args[0])
             problem_id = args[1]
             
-            assignment = self._assignment_service.assign_problem(student_id, problem_id)
+            assignment = self._assignment_service.create_assignment(student_id, problem_id)
             print(f"Assignment created successfully: ID {assignment.get_assignment_id()}")
             
         except ValueError as e:
@@ -538,6 +546,109 @@ Other:
             print("Error: k must be a valid number")
         except Exception as e:
             print(f"Error generating report: {e}")
+
+    def _handle_stats_students(self, args):
+        """Handle stats_students command"""
+        try:
+            students = self._student_service.list_students()
+            problems = self._problem_service.list_problems()
+            assignments = self._assignment_service.list_assignments()
+            
+            calc = StatisticsCalculator(students, problems, assignments)
+            stats = calc.calculate_student_statistics()
+            
+            print("STUDENT STATISTICS:")
+            print("-" * 80)
+            print(f"{'Name':<20} {'Total':<10} {'Graded':<10} {'Average':<10}")
+            print("-" * 80)
+            for s in stats:
+                avg_str = f"{s.average_grade:.2f}" if s.average_grade is not None else "N/A"
+                print(f"{s.student_name:<20} {s.total_assignments:<10} {s.graded_assignments:<10} {avg_str:<10}")
+                
+        except Exception as e:
+            print(f"Error calculating statistics: {e}")
+
+    def _handle_stats_problems(self, args):
+        """Handle stats_problems command"""
+        try:
+            students = self._student_service.list_students()
+            problems = self._problem_service.list_problems()
+            assignments = self._assignment_service.list_assignments()
+            
+            calc = StatisticsCalculator(students, problems, assignments)
+            stats = calc.calculate_problem_statistics()
+            
+            print("PROBLEM STATISTICS:")
+            print("-" * 90)
+            print(f"{'Problem':<10} {'Total':<10} {'Graded':<10} {'Completion':<10}")
+            print("-" * 90)
+            for s in stats:
+                print(f"{s.problem_id:<10} {s.total_assignments:<10} {s.graded_assignments:<10} {s.completion_rate:.2f}%")
+                
+        except Exception as e:
+            print(f"Error calculating statistics: {e}")
+
+    def _handle_report_group(self, args):
+        """Handle report_group command"""
+        if len(args) != 1:
+            print("Usage: report_group <group_id>")
+            return
+            
+        try:
+            group_id = int(args[0])
+            students = self._student_service.list_students()
+            problems = self._problem_service.list_problems()
+            assignments = self._assignment_service.list_assignments()
+            
+            calc = StatisticsCalculator(students, problems, assignments)
+            report = calc.generate_group_report(group_id)
+            
+            print(f"REPORT FOR GROUP {group_id}:")
+            print(f"Total students: {report.total_students}")
+            print(f"Students with assignments: {report.students_with_assignments}")
+            
+        except ValueError:
+            print("Error: Group ID must be a number")
+        except Exception as e:
+            print(f"Error generating report: {e}")
+
+    def _handle_export_grades(self, args):
+        """Handle export_grades command"""
+        if len(args) != 1:
+            print("Usage: export_grades <filepath>")
+            return
+            
+        try:
+            filepath = args[0]
+            students = self._student_service.list_students()
+            assignments = self._assignment_service.list_assignments()
+            
+            ReportExporter.export_all_grades(students, assignments, filepath)
+            print(f"Grades exported successfully to {filepath}")
+            
+        except Exception as e:
+            print(f"Error exporting grades: {e}")
+
+    def _handle_export_data(self, args):
+        """Handle export_data command"""
+        if len(args) != 1:
+            print("Usage: export_data <filepath>")
+            return
+            
+        try:
+            filepath = args[0]
+            students = self._student_service.list_students()
+            problems = self._problem_service.list_problems()
+            assignments = self._assignment_service.list_assignments()
+            
+            calc = StatisticsCalculator(students, problems, assignments)
+            stats = calc.calculate_student_statistics()
+            
+            ReportExporter.export_student_statistics(stats, filepath)
+            print(f"Data exported successfully to {filepath}")
+            
+        except Exception as e:
+            print(f"Error exporting data: {e}")
 
     def _handle_save_data(self, args):
         """Handle save_data command"""

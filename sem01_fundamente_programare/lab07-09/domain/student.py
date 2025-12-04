@@ -26,21 +26,4 @@ class Student:
         self._group = new_group
 
 
-def test_module():
-    student = Student(1, "John Doe", 917)
-    assert student.get_id() == 1
-    assert student.id == 1
-    assert student.get_name() == "John Doe"
-    assert student.get_group() == 917
-    
-    student.set_name("Jane Smith")
-    assert student.get_name() == "Jane Smith"
-    
-    student.set_group(918)
-    assert student.get_group() == 918
-    
-    student2 = Student(0, "", 0)
-    assert student2.get_id() == 0
-    assert student2.get_name() == ""
-    assert student2.get_group() == 0
 

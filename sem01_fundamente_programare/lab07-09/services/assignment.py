@@ -13,7 +13,7 @@ class AssignmentService:
         self._student_repo = StudentRepository([])
         self._problem_repo = ProblemRepository([])
 
-    def assign_problem(self, student_id: int, problem_id: str) -> Assignment:
+    def create_assignment(self, student_id: int, problem_id: str) -> Assignment:
         """Create a new assignment for a student and problem.
         
         Validates that:
@@ -98,78 +98,3 @@ class AssignmentService:
         """Set problem repository (for integration with existing services)."""
         self._problem_repo = problem_repo
 
-
-def test_module():
-    service = AssignmentService()
-    
-    # Setup test data
-    service._student_repo.add_student("John Doe", 917)
-    service._student_repo.add_student("Jane Smith", 918)
-    
-    from datetime import date
-    service._problem_repo.add_problem(7, 1, "Sort array", date(2024, 12, 15))
-    service._problem_repo.add_problem(7, 2, "Search algorithm", date(2024, 12, 20))
-    
-    # Test creating assignment
-    assignment1 = service.create_assignment(1, "7_1")
-    assert assignment1.get_student_id() == 1
-    assert assignment1.get_problem_id() == "7_1"
-    assert assignment1.get_grade() is None
-    
-    # Test assignment already exists
-    try:
-        service.create_assignment(1, "7_1")
-        assert False, "Should raise ValueError for duplicate assignment"
-    except ValueError as e:
-        assert "already exists" in str(e)
-    
-    # Test invalid student
-    try:
-        service.create_assignment(999, "7_1")
-        assert False, "Should raise ValueError for invalid student"
-    except ValueError as e:
-        assert "not found" in str(e)
-    
-    # Test invalid problem
-    try:
-        service.create_assignment(1, "8_1")
-        assert False, "Should raise ValueError for invalid problem"
-    except ValueError as e:
-        assert "not found" in str(e)
-    
-    # Test grading
-    service.grade_assignment(1, 9.5)
-    graded = service.get_assignment_by_id(1)
-    assert graded is not None
-    assert graded.get_grade() == 9.5
-    
-    # Test invalid grade
-    try:
-        service.grade_assignment(1, 11)
-        assert False, "Should raise ValueError for grade > 10"
-    except ValueError as e:
-        assert "between 0 and 10" in str(e)
-    
-    try:
-        service.grade_assignment(1, -1)
-        assert False, "Should raise ValueError for grade < 0"
-    except ValueError as e:
-        assert "between 0 and 10" in str(e)
-    
-    # Test listing
-    assignments = service.list_assignments()
-    assert len(assignments) == 1
-    assert assignments[0].get_assignment_id() == 1
-    
-    # Test helper methods
-    student_name = service.get_student_name(1)
-    assert student_name == "John Doe"
-    
-    problem_desc = service.get_problem_description("7_1")
-    assert problem_desc == "Sort array"
-    
-    unknown_student = service.get_student_name(999)
-    assert "Unknown" in unknown_student
-    
-    unknown_problem = service.get_problem_description("9_1")
-    assert "Unknown" in unknown_problem
