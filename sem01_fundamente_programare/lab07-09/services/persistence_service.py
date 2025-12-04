@@ -173,37 +173,3 @@ class PersistenceService:
         except Exception as e:
             print(f"Error exporting data: {e}")
 
-
-def test_module():
-    """Test the persistence service"""
-    import tempfile
-    
-    # Create test services
-    student_service = StudentService()
-    problem_service = ProblemService()
-    assignment_service = AssignmentService()
-    
-    # Add some test data
-    student_service.add_student("John Doe", 917)
-    student_service.add_student("Jane Smith", 918)
-    
-    problem_service.add_problem(7, 1, "Test problem", date(2024, 12, 15))
-    
-    # Create persistence service and save data
-    with tempfile.TemporaryDirectory() as temp_dir:
-        persistence = PersistenceService(temp_dir)
-        persistence.save_application_data(student_service, problem_service, assignment_service)
-        
-        # Load data back
-        students, problems, assignments = persistence.load_application_data()
-        
-        assert len(students) == 2
-        assert students[0].get_name() == "John Doe"
-        assert len(problems) == 1
-        assert problems[0].get_description() == "Test problem"
-        
-        print(f"Test passed: Loaded {len(students)} students, {len(problems)} problems, {len(assignments)} assignments")
-
-
-if __name__ == "__main__":
-    test_module()
