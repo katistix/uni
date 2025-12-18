@@ -53,6 +53,7 @@ class CLI:
             "create_assignment": self._handle_create_assignment,
             "grade_assignment": self._handle_grade_assignment,
             "list_assignments": self._handle_list_assignments,
+            "list_assignments_sorted": self._handle_list_assignments_sorted,
             
             # Reports
             "raport": self._handle_raport,
@@ -133,6 +134,10 @@ Assignments:
   create_assignment <student_id> <problem_id>  - Assign a problem to a student
   grade_assignment <assignment_id> <grade>     - Grade an assignment (0-10)
   list_assignments                             - List all assignments
+  list_assignments_sorted [method] [sort_by] [reverse] - List sorted assignments
+                                                       method: insertion/comb
+                                                       sort_by: id/student_id/problem_id/grade
+                                                       reverse: true/false
 
 Reports:
   raport [k]                        - Generate k*k matrix report (default: 3)
@@ -449,6 +454,77 @@ Other:
                 return
             
             print("ASSIGNMENTS:")
+            print("-" * 90)
+            print(f"{'ID':<5} {'Student':<20} {'Problem':<10} {'Description':<25} {'Grade':<10}")
+            print("-" * 90)
+            
+            for assignment in assignments:
+                # Get student name
+                try:
+                    student = self._student_service._student_repo.find_student_by_id(assignment.get_student_id())
+                    student_name = student.get_name() if student else f"ID {assignment.get_student_id()}"
+                except:
+                    student_name = f"ID {assignment.get_student_id()}"
+                
+                # Get problem description
+                try:
+                    problem_id = assignment.get_problem_id()
+                    parts = problem_id.split('_')
+                    lab_num, prob_num = int(parts[0]), int(parts[1])
+                    problem = self._problem_service._problem_repo.find_problem(lab_num, prob_num)
+                    description = problem.get_description()[:24] if problem else "Unknown"
+                except:
+                    description = "Unknown"
+                
+                grade_str = f"{assignment.get_grade()}" if assignment.has_grade() else "Not graded"
+                
+                print(f"{assignment.get_assignment_id():<5} {student_name:<20} {assignment.get_problem_id():<10} {description:<25} {grade_str:<10}")
+                
+        except Exception as e:
+            print(f"Error listing assignments: {e}")
+
+    def _handle_list_assignments_sorted(self, args):
+        """handle sortarea listei de assignment-uri
+        usage: list_assignments_sorted [metoda] [sort_by] [reverse]
+        metoda: insertion sau comb (default: insertion)
+        sort_by: id, student_id, problem_id, grade (default: id)
+        reverse: true/false (default: false)
+        """
+        try:
+            method = 'insertion'
+            sort_by = 'id'
+            reverse = False
+            
+            if args and len(args) > 0:
+                metoda = args[0]
+                if metoda not in ['insertion', 'comb']:
+                    print("metoda trebuie sa fie 'insertion' sau 'comb'")
+                    return
+            
+            if args and len(args) > 1:
+                sort_by = args[1]
+                if sort_by not in ['id', 'student_id', 'problem_id', 'grade']:
+                    print("sort_by trebuie sa fie 'id', 'student_id', 'problem_id' sau 'grade'")
+                    return
+            
+            if args and len(args) > 2:
+                reverse_str = args[2].lower()
+                if reverse_str in ['true', '1', 'yes']:
+                    reverse = True
+                elif reverse_str in ['false', '0', 'no']:
+                    reverse = False
+                else:
+                    print("reverse trebuie sa fie 'true' sau 'false'")
+                    return
+            
+            assignments = self._assignment_service.list_assignments_sorted(method, sort_by, reverse)
+            
+            if not assignments:
+                print("No assignments found.")
+                return
+            
+            order_str = "descrescator" if reverse else "crescator"
+            print(f"ASSIGNMENTS (sortate cu {method} dupa {sort_by}, {order_str}):")
             print("-" * 90)
             print(f"{'ID':<5} {'Student':<20} {'Problem':<10} {'Description':<25} {'Grade':<10}")
             print("-" * 90)

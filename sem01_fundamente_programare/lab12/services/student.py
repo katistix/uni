@@ -3,6 +3,7 @@ from repos.student import StudentRepository
 from domain.student import Student
 from domain.assignment import Assignment
 from domain.student_statistic import StudentStatistic
+from services.sorting import insertion_sort
 from typing import List
 
 
@@ -72,13 +73,15 @@ class StudentService:
                     graded_assignments=len(graded_assignments)
                 ))
         
-        # Sort by average grade descending
-        student_stats.sort(key=lambda x: x.get_average_grade(), reverse=True)
+        # Sort by average grade descending using insertion_sort
+        student_stats = insertion_sort(student_stats, 
+                                     key=lambda x: x.get_average_grade(), 
+                                     reverse=True)
         return student_stats[:limit]
 
     def search_students_recursive(self, search_term: str, search_type: str) -> List[Student]:
         """cauta recursiv studenti dupa nume, id, sau grupa.
-        complexitate: O(n)
+        complexitate: O(n), Theta(n) - tot timpul parcurgem lista de studenti completa
         """
         students = self._student_repo.get_all_students()
         return self._search_recursive_helper(students, search_term, search_type, 0)
@@ -121,13 +124,13 @@ class StudentService:
     def calculate_total_assignments_recursive(self, assignments: List[Assignment], student_id: int) -> int:
         """calculeaza recursiv numarul total de teme pentru un student
         
-        complexitate: O(n)
+        complexitate: O(n) = Theta(n)
         """
         return self._count_assignments_helper(assignments, student_id, 0)
     
     def _count_assignments_helper(self, assignments: List[Assignment], student_id: int, index: int) -> int:
-        """Funcție helper pentru numărarea recursivă a temelor"""
-        # am ajuns la sfârșitul listei de teme
+        """Funcție helper pentru numararea recursiva a temelor"""
+        # am ajuns la sfarsitul listei de teme
         if index >= len(assignments):
             return 0
         

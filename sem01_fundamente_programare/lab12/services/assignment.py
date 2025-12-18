@@ -4,6 +4,7 @@ from repos.problem import ProblemRepository
 from domain.assignment import Assignment
 from domain.student import Student
 from domain.problem import Problem
+from services.sorting import insertion_sort, comb_sort
 from typing import List, Optional
 
 
@@ -52,6 +53,34 @@ class AssignmentService:
     def list_assignments(self) -> List[Assignment]:
         """Get all assignments."""
         return self._assignment_repo.get_all_assignments()
+    
+    def list_assignments_sorted(self, sort_method: str = 'insertion', 
+                               sort_by: str = 'id', reverse: bool = False) -> List[Assignment]:
+        """gaseste toate temele sortate dupa criteriul specificat.
+            sort_method: 'insertion' or 'comb'
+            sort_by: 'id', 'student_id', 'problem_id', 'grade'
+            reverse: True for descending order
+        """
+        assignments = self._assignment_repo.get_all_assignments()
+        
+        if sort_by == 'id':
+            key_func = lambda x: x.get_assignment_id()
+        elif sort_by == 'student_id':
+            key_func = lambda x: x.get_student_id()
+        elif sort_by == 'problem_id':
+            key_func = lambda x: x.get_problem_id()
+        elif sort_by == 'grade':
+            # pentru grade, punem None-urile la sfarsit
+            key_func = lambda x: (x.get_grade() is None, x.get_grade() or 0)
+        else:
+            raise ValueError("sort_by trebuie sa fie 'id', 'student_id', 'problem_id' sau 'grade'")
+        
+        if sort_method == 'insertion':
+            return insertion_sort(assignments, key=key_func, reverse=reverse)
+        elif sort_method == 'comb':
+            return comb_sort(assignments, key=key_func, reverse=reverse)
+        else:
+            raise ValueError("sort_method trebuie sa fie 'insertion' sau 'comb'")
 
     def get_assignment_by_id(self, assignment_id: int) -> Optional[Assignment]:
         """Get assignment by ID."""

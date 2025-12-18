@@ -3,6 +3,7 @@ from domain.problem import Problem
 from datetime import date
 from domain.assignment import Assignment
 from domain.problem_statistic import ProblemStatistic
+from services.sorting import comb_sort
 from typing import List
 
 
@@ -63,13 +64,15 @@ class ProblemService:
                 graded_assignments=len([a for a in problem_assignments if a.has_grade()])
             ))
         
-        # Sort by total assignments descending (popularity)
-        problem_stats.sort(key=lambda x: x.get_total_assignments(), reverse=True)
+        # Sort by total assignments descending (popularity) using comb_sort
+        problem_stats = comb_sort(problem_stats,
+                                key=lambda x: x.get_total_assignments(), 
+                                reverse=True)
         return problem_stats[:limit]
 
     def find_problems_by_lab_recursive(self, lab_number: int) -> List[Problem]:
         """cauta recursiv toate problemele dintr-un laborator specific
-        complexitate: O(n)
+        complexitate: O(n), Theta(n) - pentru ca trebuie sa parcurgem toate problemele o singura data
         """
         problems = self._problem_repo.list_problems()
         return self._find_by_lab_helper(problems, lab_number, 0)
