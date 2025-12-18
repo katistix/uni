@@ -68,24 +68,23 @@ class ProblemService:
         return problem_stats[:limit]
 
     def find_problems_by_lab_recursive(self, lab_number: int) -> List[Problem]:
-        """Recursively find all problems from a specific lab.
-        Complexitate: O(n) timp
+        """cauta recursiv toate problemele dintr-un laborator specific
+        complexitate: O(n)
         """
         problems = self._problem_repo.list_problems()
         return self._find_by_lab_helper(problems, lab_number, 0)
     
     def _find_by_lab_helper(self, problems: List[Problem], lab_number: int, index: int) -> List[Problem]:
-        """Helper function for recursive lab problem finding"""
-        # Base case: reached end of problems list
+        """helper function pentru gasirea recursiva a problemelor din laborator"""
+        # am ajuns sfarsitul listei de probleme
         if index >= len(problems):
             return []
         
         current_problem = problems[index]
         results = self._find_by_lab_helper(problems, lab_number, index + 1)
         
-        # Check if current problem belongs to specified lab
+        # daca problema curenta apartine laboratorului specificat
         if current_problem.get_lab_number() == lab_number:
             results.insert(0, current_problem)
         
         return results
-

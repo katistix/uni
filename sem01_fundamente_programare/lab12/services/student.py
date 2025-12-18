@@ -77,14 +77,14 @@ class StudentService:
         return student_stats[:limit]
 
     def search_students_recursive(self, search_term: str, search_type: str) -> List[Student]:
-        """Recursively search for students by name, id, or group.
-        Complexitate: O(n) timp
+        """cauta recursiv studenti dupa nume, id, sau grupa.
+        complexitate: O(n)
         """
         students = self._student_repo.get_all_students()
         return self._search_recursive_helper(students, search_term, search_type, 0)
     
     def _search_recursive_helper(self, students: List[Student], search_term: str, search_type: str, index: int) -> List[Student]:
-        """Helper function pentru cautarea recursiva"""
+        """helper function pentru cautarea recursiva"""
         if index >= len(students):
             return []
         
@@ -119,19 +119,21 @@ class StudentService:
         return results
 
     def calculate_total_assignments_recursive(self, assignments: List[Assignment], student_id: int) -> int:
-        """Recursively calculate total number of assignments for a student.
+        """calculeaza recursiv numarul total de teme pentru un student
         
-        Complexitate: O(n) timp, O(n) spațiu (stack space)
+        complexitate: O(n)
         """
         return self._count_assignments_helper(assignments, student_id, 0)
     
     def _count_assignments_helper(self, assignments: List[Assignment], student_id: int, index: int) -> int:
-        """Helper function for recursive assignment counting"""
-        # Base case: reached end of assignments list
+        """Funcție helper pentru numărarea recursivă a temelor"""
+        # am ajuns la sfârșitul listei de teme
         if index >= len(assignments):
             return 0
         
-        # Recursive case: count current assignment if it belongs to student
-        current_count = 1 if assignments[index].get_student_id() == student_id else 0
-        return current_count + self._count_assignments_helper(assignments, student_id, index + 1)
-
+        apartine = 0
+        # numărăm tema curentă dacă aparține studentului
+        if assignments[index].get_student_id() == student_id:
+            apartine = 1
+            
+        return apartine + self._count_assignments_helper(assignments, student_id, index + 1)
